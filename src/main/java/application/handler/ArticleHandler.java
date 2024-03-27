@@ -60,15 +60,18 @@ public class ArticleHandler implements Handler {
         Request mainReq = new Request(GET + " /main " + HTTP_VERSION);
         int index = Integer.parseInt(request.getRequestQuery("index")) - 1;
 
-        if (index>=articleList.size()){
+        // 처음 ,마지막 글에서 이동 버튼 클릭 처리
+        if(index==-1) index+=1;
+        if(index==articleList.size()) index-=1;
+
+        // 존재하지 않는 글에 접근 처리
+        if (index>articleList.size()){
             return errorHandler.getErrorResponse(NotFound);
         }
 
         startLine = new ResponseStartLine(HTTP_VERSION, OK);
         responseBody = new MessageBody(
-                HtmlMaker.getArticlePage(articleList.get(index), new String(resourceHandler.responseGet(mainReq).getBody()), index
-                )
-                , HTML);
+                HtmlMaker.getArticlePage(articleList.get(index), new String(resourceHandler.responseGet(mainReq).getBody()), index), HTML);
 
         responseHeader = writeContentResponseHeader(responseBody);
         return new Response(startLine).header(responseHeader).body(responseBody);
