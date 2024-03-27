@@ -3,15 +3,18 @@ package application.handler.utils;
 import application.db.Database;
 import application.model.Article;
 import application.model.User;
-import webserver.HttpHandler.ResourceHandler;
-import webserver.HttpMessage.Request;
 
 public class HtmlMaker {
-    public static String getArticlePage(Article article , String template){
+    public static String getArticlePage(Article article , String template, int index){
+        String nextPath = "/main/article?index=" + (index + 2);
+        String prevPath = "/main/article?index=" + (index);
+
         return template
                 .replace("article_image" , "\"data:image/;base64," + article.getEncodedImg()+"\"")
                 .replace("writer_account" , article.getWriter())
-                .replace("article_content" , article.getContent());
+                .replace("article_content" , article.getContent())
+                .replace("next_article", nextPath)
+                .replace("prev_article", prevPath);
     }
 
     public static String getListHtml(){

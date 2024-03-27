@@ -66,7 +66,8 @@ public class ArticleHandler implements Handler {
 
         startLine = new ResponseStartLine(HTTP_VERSION, OK);
         responseBody = new MessageBody(
-                HtmlMaker.getArticlePage(articleList.get(index), new String(resourceHandler.responseGet(mainReq).getBody()))
+                HtmlMaker.getArticlePage(articleList.get(index), new String(resourceHandler.responseGet(mainReq).getBody()), index
+                )
                 , HTML);
 
         responseHeader = writeContentResponseHeader(responseBody);
