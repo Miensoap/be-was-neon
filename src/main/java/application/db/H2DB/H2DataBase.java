@@ -5,7 +5,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public abstract class H2DataBase {
-    private String url = "jdbc:h2:~/codestagram";
+    private String url = "jdbc:h2:~/codestagram" + ";DB_CLOSE_ON_EXIT=FALSE";
     private String id ="soap";
     private String password = "1234";
     protected final Connection connection;

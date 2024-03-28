@@ -1,6 +1,5 @@
 package application.handler.utils;
 
-import application.db.memoryDB.MemUserDB;
 import application.model.Article;
 import application.model.User;
 
@@ -12,7 +11,7 @@ public class HtmlMaker {
         String prevPath = "/main/article?index=" + (index - 1);
 
         return template
-                .replace("article_image" , "\"data:image/;base64," + article.getEncodedImg()+"\"")
+                .replace("article_image" , article.getFilePath())
                 .replace("writer_account" , article.getWriter())
                 .replace("article_content" , article.getContent())
                 .replace("next_article", nextPath)

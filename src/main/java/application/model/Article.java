@@ -1,23 +1,26 @@
 package application.model;
 
 public class Article {
-    private String encodedImg;
+    private String filePath;
     private final String content;
     private final String writer;
+    private final int index;
 
-    public Article(String content , String writer){
+    public Article(String content ,String writer, int index){
         this.content = content;
         this.writer = writer;
+        this.index = index;
     }
 
-    public Article(String content , String encodedImg, String writer){
-        this.encodedImg = encodedImg;
+    public Article(String content , String filePath, String writer, int index){
+        this.filePath = filePath;
         this.content = content;
         this.writer = writer;
+        this.index = index;
     }
 
-    public String getEncodedImg() {
-        return encodedImg;
+    public String getFilePath() {
+        return filePath;
     }
 
     public String getContent() {
@@ -26,5 +29,9 @@ public class Article {
 
     public String getWriter() {
         return writer;
+    }
+
+    public int getIndex() {
+        return this.index;
     }
 }

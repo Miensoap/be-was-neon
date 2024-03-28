@@ -44,6 +44,7 @@ public class H2UserDB extends H2DataBase implements UserDB {
             query.setString(1 , userId);
             resultSet = query.executeQuery();
 
+            if(!resultSet.next()) return null;
             return convertRowToUser(resultSet);
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -70,11 +71,11 @@ public class H2UserDB extends H2DataBase implements UserDB {
             throw new RuntimeException(e);
         }
     }
-    private static User convertRowToUser(ResultSet resultSet) throws SQLException {
+    private User convertRowToUser(ResultSet resultSet) throws SQLException {
         return new User(
                 resultSet.getString("userid") ,
                 resultSet.getString("password"),
-                resultSet.getString("name"),
+                resultSet.getString("userName"),
                 resultSet.getString("email"));
     }
 

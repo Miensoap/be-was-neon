@@ -73,10 +73,4 @@ public class MultiTypeParser {
         }
         return result;
     }
-
-    private static void writeToFilePNG(byte[] content) throws IOException {
-        OutputStream outputStream = new FileOutputStream(staticSourcePath + "/img/post/output.png");
-        outputStream.write(content);
-        outputStream.close();
-    }
 }

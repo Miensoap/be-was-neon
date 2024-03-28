@@ -52,7 +52,7 @@ public class H2SessionDB extends H2DataBase implements SessionDB {
 
     @Override
     public void removeSession(String sessionId) {
-        String removeSessionQuery = "DELETE FROM Session WHERE userId = ?;";
+        String removeSessionQuery = "DELETE FROM Session WHERE sessionId = ?;";
         try {
             PreparedStatement query = connection.prepareStatement(removeSessionQuery);
             query.setString(1 , sessionId);
