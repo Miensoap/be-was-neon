@@ -1,8 +1,10 @@
 package webserver.HttpHandler;
 
+import application.db.interfaces.SessionDB;
+import application.db.interfaces.UserDB;
 import application.handler.LoginHandler;
-import application.db.Database;
-import application.db.SessionStore;
+import application.db.memoryDB.MemUserDB;
+import application.db.memoryDB.MemSessionDB;
 import application.model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -10,20 +12,20 @@ import org.junit.jupiter.api.Test;
 import webserver.HttpMessage.MessageBody;
 import webserver.HttpMessage.Request;
 import webserver.HttpMessage.Response;
-import webserver.HttpHandler.Mapping.MappingMatcher;
-import webserver.TestUtils;
 import webserver.HttpMessage.constants.eums.FileType;
 
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
 class LoginHandlerTest {
 
-    final LoginHandler loginHandler = new LoginHandler();
+    final UserDB userDB = new MemUserDB();
+    final SessionDB sessionDB = new MemSessionDB();
+    final LoginHandler loginHandler = new LoginHandler(userDB, sessionDB);
 
     @BeforeEach
     void clearStore(){
-        Database.clear();
-        SessionStore.clear();
+        userDB.clear();
+        sessionDB.clear();
         System.out.println("clear");
     }
 
@@ -31,7 +33,7 @@ class LoginHandlerTest {
     @Test
     void login() throws Exception {
         // given
-        Database.addUser(new User("test" , "test", "test", "test@naver.com"));
+        userDB.addUser(new User("test" , "test", "test", "test@naver.com"));
 
         // when
         Response response = loginHandler.login(new Request("POST /login HTTP/1.1")
@@ -39,7 +41,7 @@ class LoginHandlerTest {
 
         //then
         assertSoftly(softly -> {
-            softly.assertThat(SessionStore.getSize()).isEqualTo(1);
+            softly.assertThat(sessionDB.getSize()).isEqualTo(1);
             softly.assertThat(response.getStartLine().toString()).isEqualTo("HTTP/1.1 302 Found");
         });
     }
@@ -48,7 +50,7 @@ class LoginHandlerTest {
     @Test
     void loginFail() throws Exception {
         // given
-        Database.addUser(new User("test" , "test", "test", "test@naver.com"));
+        userDB.addUser(new User("test" , "test", "test", "test@naver.com"));
 
         // when
         Response response = loginHandler.login(new Request("POST /login HTTP/1.1")
@@ -56,7 +58,7 @@ class LoginHandlerTest {
 
         //then
         assertSoftly(softly -> {
-            softly.assertThat(SessionStore.getSize()).isEqualTo(0);
+            softly.assertThat(sessionDB.getSize()).isEqualTo(0);
             softly.assertThat(response.getStartLine().toString()).isEqualTo("HTTP/1.1 302 Found");
         });
     }

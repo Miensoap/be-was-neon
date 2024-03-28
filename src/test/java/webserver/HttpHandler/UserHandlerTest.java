@@ -1,7 +1,8 @@
 package webserver.HttpHandler;
 
+import application.db.interfaces.UserDB;
 import application.handler.UserHandler;
-import application.db.Database;
+import application.db.memoryDB.MemUserDB;
 import org.junit.jupiter.api.*;
 import webserver.HttpMessage.Request;
 import webserver.HttpMessage.Response;
@@ -15,11 +16,12 @@ import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
 class UserHandlerTest {
 
-    final UserHandler userHandler = new UserHandler();
+    final UserDB userDB = new MemUserDB();
+    final UserHandler userHandler = new UserHandler(userDB);
 
     @AfterEach
     void clearDB() {
-        Database.clear();
+        userDB.clear();
     }
 
     @DisplayName("같은 ID 가입 두번 시나리오")
@@ -32,16 +34,16 @@ class UserHandlerTest {
 
                     assertSoftly(softly -> {
                         softly.assertThat(response.getStartLine().toString()).isEqualTo("HTTP/1.1 302 Found");
-                        softly.assertThat(Database.findUserById("test").getName()).isEqualTo("test");
+                        softly.assertThat(userDB.findUserById("test").getName()).isEqualTo("test");
                     });
                 }),
 
                 DynamicTest.dynamicTest("이미 존재하는 유저 ID 라면 DB에 추가하지 않는다", () -> {
-                    int beforeSize = Database.findAll().size();
+                    int beforeSize = userDB.findAll().size();
 
                     userHandler.createUser(request);
 
-                    assertThat(Database.findAll().size()).isEqualTo(beforeSize);
+                    assertThat(userDB.findAll().size()).isEqualTo(beforeSize);
                 })
         );
     }

@@ -1,6 +1,8 @@
 package db;
 
-import application.db.SessionStore;
+import application.db.interfaces.SessionDB;
+import application.db.memoryDB.MemSessionDB;
+import application.model.Session;
 import application.model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -8,7 +10,8 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.*;
 
-class SessionStoreTest {
+class MemSessionDBTest {
+    final SessionDB sessionDB = new MemSessionDB();
     User user;
     @BeforeEach
     void createUser(){
@@ -18,17 +21,17 @@ class SessionStoreTest {
     @Test
     @DisplayName("쿠키와 유저 정보로 새 세션을 만들고 , 쿠키 정보로 로그인한 유저를 조회할 수 있다")
     void addSession() {
-        SessionStore.addSession("1234", user);
+        sessionDB.addSession(new Session("1234", user.getUserId()));
 
-        assertThat(SessionStore.getSession("1234")).isEqualTo(user);
+        assertThat(sessionDB.getSession("1234")).isEqualTo(user.getUserId());
     }
 
     @Test
     @DisplayName("쿠키 정보로 세션을 삭제할 수 있다")
     void removeSession(){
-        SessionStore.addSession("12345" , user);
-        SessionStore.removeSession("12345");
+        sessionDB.addSession(new Session("12345", user.getUserId()));
+        sessionDB.removeSession("12345");
 
-        assertThat(SessionStore.getSession("12345")).isEqualTo(null);
+        assertThat(sessionDB.getSession("12345")).isEqualTo(null);
     }
 }
