@@ -16,16 +16,14 @@ import webserver.HttpMessage.*;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.ArrayList;
 import java.util.Base64;
-import java.util.List;
 
 import static webserver.HttpMessage.constants.WebServerConst.*;
 import static webserver.HttpMessage.constants.eums.FileType.*;
 import static webserver.HttpMessage.constants.eums.ResponseStatus.*;
 import static webserver.WebServer.staticSourcePath;
 
-public class ArticleHandler implements Handler {
+public class ArticleHandler implements Handler , Authorizer{
     // Response
     private ResponseStartLine startLine;
     private MessageHeader responseHeader;
@@ -46,16 +44,24 @@ public class ArticleHandler implements Handler {
         this.articleDB = articleDB;
     }
 
-
     @PostMapping(path = "/article")
     public Response postArticle(Request request) throws IOException {
-        int newArticleIndex = createArticle(request);
+        String writer = userDB.findUserById(sessionDB.getSession(getSid(request)).get()).get().getName();
+
+        int newArticleIndex = createArticle(request.getBody() , writer);
 
         startLine = new ResponseStartLine(HTTP_VERSION , FOUND);
         responseHeader = MessageHeader.builder()
                 .field(LOCATION , "/main/article?index=" + newArticleIndex).build();
 
         return new Response(startLine).header(responseHeader).body(responseBody);
+    }
+
+    @GetMapping(path = "/article")
+    public Response getWritePage(Request request){
+        if(sessionDB.getSession(getSid(request)).isEmpty()) return redirectToLogin();
+
+        return resourceHandler.responseGet(request);
     }
 
     @GetMapping(path = "/main/article")
@@ -82,17 +88,15 @@ public class ArticleHandler implements Handler {
         return new Response(startLine).header(responseHeader).body(responseBody);
     }
 
-    private int createArticle(Request request) throws IOException {
+    private int createArticle(MessageBody messageBody , String writer) throws IOException {
         Base64.Decoder decoder = Base64.getDecoder();
-        MessageBody requestBody = request.getBody();
-        byte[] decodedImg = decoder.decode(requestBody.getMultiContent(PNG));
+        byte[] decodedImg = decoder.decode(messageBody.getMultiContent(PNG));
         int currentIndex = articleDB.getSize()+1;
 
-        String content = new String(decoder.decode(requestBody.getMultiContent(TXT)));
+        String content = new String(decoder.decode(messageBody.getMultiContent(TXT)));
         String filePath = writeToFilePNG(decodedImg , currentIndex+".png");
-        String writer = userDB.findUserById(sessionDB.getSession(getSid(request))).getName();
 
-        articleDB.addArticle(new Article(content , filePath , writer,currentIndex));
+        articleDB.addArticle(new Article(content , filePath , writer, currentIndex));
 
         System.out.println("Article added : " + content);
 

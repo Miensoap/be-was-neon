@@ -21,7 +21,7 @@ import static org.assertj.core.api.Assertions.*;
 class MappingMatcherTest {
     final UserDB userDB = new MemUserDB();
     final SessionDB sessionDB = new MemSessionDB();
-    final MappingMatcher matcher = new MappingMatcher(List.of(new UserHandler(userDB) , new LoginHandler(userDB , sessionDB)));
+    final MappingMatcher matcher = new MappingMatcher(List.of(new UserHandler(userDB, sessionDB) , new LoginHandler(userDB , sessionDB)));
     @Test
     @DisplayName("resource GET 요청이 들어오면 resourceHandler 의 메서드를 실행해 Response 를 반환한다")
     void getResourceResponse() throws Exception {

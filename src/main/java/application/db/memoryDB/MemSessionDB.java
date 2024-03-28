@@ -2,19 +2,19 @@ package application.db.memoryDB;
 
 import application.db.interfaces.SessionDB;
 import application.model.Session;
-import application.model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 public class MemSessionDB implements SessionDB {
     private Map<String, String> sessions = new HashMap<>();
     private final Logger log = LoggerFactory.getLogger(MemSessionDB.class);
 
-    public String getSession(String sessionId){
-        return sessions.get(sessionId);
+    public Optional<String> getSession(String sessionId){
+        return Optional.ofNullable(sessions.get(sessionId));
     }
 
     public int getSize(){

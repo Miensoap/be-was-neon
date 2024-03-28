@@ -3,11 +3,12 @@ package application.db.interfaces;
 import application.model.User;
 
 import java.util.Collection;
+import java.util.Optional;
 
 public interface UserDB {
-    void addUser(User user);
+    void addUser(User user) throws IllegalArgumentException;
 
-    User findUserById(String userId);
+    Optional<User> findUserById(String userId);
 
     Collection<User> findAll();
 

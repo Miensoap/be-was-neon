@@ -13,12 +13,12 @@ public class Response {
         this.startLine = startLine;
     }
 
-    public Response header(MessageHeader messageHeader){
-        this.header =messageHeader;
+    public Response header(MessageHeader messageHeader) {
+        this.header = messageHeader;
         return this;
     }
 
-    public Response body(MessageBody body){
+    public Response body(MessageBody body) {
         this.body = body;
         return this;
     }
@@ -32,8 +32,12 @@ public class Response {
     }
 
     public byte[] getBody() {
-        if(body == null) return null;
+        if (body == null) return null;
         return body.getBody();
+    }
+
+    public MessageBody messageBody() {
+        return this.body;
     }
 
     public String toString() {

@@ -2,8 +2,10 @@ package application.db.interfaces;
 
 import application.model.Session;
 
+import java.util.Optional;
+
 public interface SessionDB {
-    String getSession(String sessionId);
+    Optional<String> getSession(String sessionId);
 
     void addSession(Session session);
 

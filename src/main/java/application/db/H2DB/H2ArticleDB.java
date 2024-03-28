@@ -38,21 +38,20 @@ public class H2ArticleDB extends H2DataBase implements ArticleDB {
         try {
             PreparedStatement query = connection.prepareStatement(getArticleQuery);
             query.setInt(1 , index);
-            System.out.println("Try to index : " + index);
             resultSet = query.executeQuery();
 
             return convertRowToArticle(resultSet);
         } catch (SQLException e) {
+            e.printStackTrace();
             throw new RuntimeException(e);
         }
     }
 
     private Article convertRowToArticle(ResultSet resultSet) throws SQLException {
-        String content = resultSet.getString(1);
-        String writer = resultSet.getString(2);
-        String filePath = resultSet.getString(3);
-        int index = Integer.parseInt(resultSet.getString(4));
-
+            String content = resultSet.getString(1);
+            String writer = resultSet.getString(2);
+            String filePath = resultSet.getString(3);
+            int index = Integer.parseInt(resultSet.getString(4));
         return new Article(content , filePath , writer, index);
     }
 

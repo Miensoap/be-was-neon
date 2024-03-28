@@ -1,5 +1,6 @@
 package application.handler;
 
+import application.db.interfaces.SessionDB;
 import application.db.interfaces.UserDB;
 import application.handler.utils.HtmlMaker;
 import application.model.User;
@@ -20,7 +21,7 @@ import static webserver.HttpMessage.constants.WebServerConst.LOCATION;
 import static webserver.HttpMessage.constants.eums.ResponseStatus.FOUND;
 import static webserver.HttpMessage.constants.eums.ResponseStatus.OK;
 
-public class UserHandler implements Handler {
+public class UserHandler implements Handler , Authorizer{
 
     private ResponseStartLine startLine;
     private MessageHeader responseHeader;
@@ -28,9 +29,11 @@ public class UserHandler implements Handler {
 
     private static final Logger log = LoggerFactory.getLogger(ResourceHandler.class);
     private final UserDB userDB;
+    private final SessionDB sessionDB;
 
-    public UserHandler(UserDB userDB){
+    public UserHandler(UserDB userDB, SessionDB sessionDB){
         this.userDB = userDB;
+        this.sessionDB = sessionDB;
     }
 
     @PostMapping(path = "/registration")
@@ -47,29 +50,25 @@ public class UserHandler implements Handler {
 
             userDB.addUser(user);
             log.info("User Created : " + user.getUserId());
+             return redirectToLogin();
         } catch (IllegalArgumentException fail) {
             log.info("Fail to create new user : " + fail.getMessage());
         }
 
         startLine = new ResponseStartLine(HTTP_VERSION, FOUND);
         responseHeader = MessageHeader.builder().field(LOCATION , "/").build();
-
         return new Response(startLine).header(responseHeader);
     }
 
     @GetMapping(path = "/user/list")
     public Response userList(Request request) {
-        if (!verifySession(request)) {
-            startLine = new ResponseStartLine(HTTP_VERSION, FOUND);
-            responseHeader = MessageHeader.builder().field(LOCATION , "/").build();
-
-            return new Response(startLine).header(responseHeader);
+        if (sessionDB.getSession(getSid(request)).isEmpty()) {
+            return redirectToLogin();
         }
 
         startLine = new ResponseStartLine(HTTP_VERSION, OK);
 
-        List<User> users = new ArrayList<>();
-        users.addAll(userDB.findAll());
+        List<User> users = new ArrayList<>(userDB.findAll());
         responseBody = new MessageBody(HtmlMaker.getListHtml(users), FileType.HTML);
         responseHeader = writeContentResponseHeader(responseBody);
 

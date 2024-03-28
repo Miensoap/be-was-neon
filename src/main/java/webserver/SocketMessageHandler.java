@@ -33,14 +33,16 @@ public class SocketMessageHandler implements Runnable {
             dos.writeBytes(response.toString());
 
             byte[] responseBody;
-            if ((responseBody = response.getBody()) != null) {
+            if (response.messageBody() != null) {
+                responseBody = response.messageBody().getBody();
                 dos.write(responseBody);
-                dos.flush();
             }
+            dos.flush();
             log.debug("Send : " + response.getStartLine().toString() + " for " + request.getStartLine().toString());
 
         } catch (Exception e) {
             log.error(e.getMessage());
+//            e.printStackTrace();
         }
     }
 }

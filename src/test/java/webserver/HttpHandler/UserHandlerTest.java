@@ -1,6 +1,8 @@
 package webserver.HttpHandler;
 
+import application.db.interfaces.SessionDB;
 import application.db.interfaces.UserDB;
+import application.db.memoryDB.MemSessionDB;
 import application.handler.UserHandler;
 import application.db.memoryDB.MemUserDB;
 import org.junit.jupiter.api.*;
@@ -17,7 +19,8 @@ import static org.assertj.core.api.SoftAssertions.assertSoftly;
 class UserHandlerTest {
 
     final UserDB userDB = new MemUserDB();
-    final UserHandler userHandler = new UserHandler(userDB);
+    final SessionDB sessionDB = new MemSessionDB();
+    final UserHandler userHandler = new UserHandler(userDB, sessionDB);
 
     @AfterEach
     void clearDB() {
@@ -34,7 +37,7 @@ class UserHandlerTest {
 
                     assertSoftly(softly -> {
                         softly.assertThat(response.getStartLine().toString()).isEqualTo("HTTP/1.1 302 Found");
-                        softly.assertThat(userDB.findUserById("test").getName()).isEqualTo("test");
+                        softly.assertThat(userDB.findUserById("test").get().getName()).isEqualTo("test");
                     });
                 }),
 

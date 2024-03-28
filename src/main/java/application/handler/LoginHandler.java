@@ -2,8 +2,6 @@ package application.handler;
 
 import application.db.interfaces.SessionDB;
 import application.db.interfaces.UserDB;
-import application.db.memoryDB.MemUserDB;
-import application.db.memoryDB.MemSessionDB;
 import application.model.Session;
 import application.model.User;
 import org.slf4j.Logger;
@@ -18,7 +16,7 @@ import webserver.HttpMessage.constants.eums.FileType;
 import static webserver.HttpMessage.constants.WebServerConst.*;
 import static webserver.HttpMessage.constants.eums.ResponseStatus.FOUND;
 
-public class LoginHandler implements Handler {
+public class LoginHandler implements Handler , Authorizer{
 
     private ResponseStartLine startLine;
     private MessageHeader responseHeader;
@@ -36,24 +34,22 @@ public class LoginHandler implements Handler {
     @PostMapping(path = "/login")
     public Response login(Request request) {
         MessageBody requestBody = request.getBody();
-        User user = userDB.findUserById(requestBody.getContentByKey(USER_ID));
+        User user = userDB.findUserById(requestBody.getContentByKey(USER_ID)).get();
         responseHeader = MessageHeader.builder().field(LOCATION, "/").build();
 
         try {
             if (user.isCorrectPassword(requestBody.getContentByKey(USER_PW))) {
-                String cookie;
-                while (true) {
-                    cookie = responseHeader.addCookie(10, "sid");
-                    if (sessionDB.getSession(cookie) == null) break;
-                }
+                String cookie = setCookie();
 
                 sessionDB.addSession(new Session(cookie, user.getUserId()));
                 log.info("login : " + user.getName());
             } else {
                 log.info("login failed : password mismatch");
+                return redirectToLogin();
             }
         } catch (NullPointerException notExistUser) {
             log.info("login failed : notExistUser");
+            return redirectToLogin();
         }
 
         startLine = new ResponseStartLine(HTTP_VERSION, FOUND);
@@ -69,7 +65,7 @@ public class LoginHandler implements Handler {
         startLine = new ResponseStartLine(HTTP_VERSION, FOUND);
         responseHeader = MessageHeader.builder()
                 .field(LOCATION, "/")
-                .field("Set-Cookie" , "name=sid; max-age=1")
+                .field("Set-Cookie" , "sid=; max-age=1")
                 .build();
         return new Response(startLine).header(responseHeader);
     }
@@ -79,21 +75,27 @@ public class LoginHandler implements Handler {
         ResourceHandler resourceHandler = new ResourceHandler();
         String path = request.getStartLine().getUri();
 
-        if (verifySession(request)) {
-            User user = userDB.findUserById(sessionDB.getSession(getSid(request)));
-            // 로그아웃 하지 않고 서버를 종료해서 쿠키는 남아있는데 MemDB에 유저가 없는 경우 처리
-            if(user == null) return resourceHandler.responseGet(request);
-
+        if (sessionDB.getSession(getSid(request)).isPresent()) {
+            String userName = sessionDB.getSession(getSid(request)).get();
             Response mainIndex = resourceHandler.responseGet(new Request("GET /main " + HTTP_VERSION));
 
-            String loginUserIndexPage = new String(mainIndex.getBody()).replace("<!--UserName-->", user.getName());
+            String loginUserIndexPage = new String(mainIndex.getBody()).replace("<!--UserName-->", userName);
             responseBody = new MessageBody(loginUserIndexPage, FileType.HTML);
             responseHeader = writeContentResponseHeader(responseBody);
-            log.info("welcome Logged-in user : " + user.getName());
+            log.info("welcome Logged-in user : " + userName);
 
             return mainIndex.header(responseHeader).body(responseBody);
         }
 
         return resourceHandler.responseGet(request);
+    }
+
+    private String setCookie() {
+        String cookie;
+        while (true) {
+            cookie = responseHeader.addCookie(10, "sid");
+            if (sessionDB.getSession(cookie).isEmpty()) break;
+        }
+        return cookie;
     }
 }

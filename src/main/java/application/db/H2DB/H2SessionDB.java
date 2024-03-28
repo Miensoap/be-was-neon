@@ -7,12 +7,14 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Optional;
 
 public class H2SessionDB extends H2DataBase implements SessionDB {
     private final Connection connection;
 
     public H2SessionDB() throws SQLException {
         this.connection = super.connection;
+        clear();
     }
 
     /**
@@ -21,7 +23,7 @@ public class H2SessionDB extends H2DataBase implements SessionDB {
      * @return
      */
     @Override
-    public String getSession(String sessionId) {
+    public Optional<String> getSession(String sessionId) {
         String findByUserIdQuery = "SELECT * FROM Session WHERE sessionId = ?";
         ResultSet resultSet;
         try {
@@ -29,11 +31,10 @@ public class H2SessionDB extends H2DataBase implements SessionDB {
             query.setString(1 , sessionId);
             resultSet = query.executeQuery();
 
-            if(!resultSet.next()) return null;
-            return resultSet.getString("userId");
+            return Optional.of(resultSet.getString("userId"));
         } catch (SQLException e) {
-            throw new RuntimeException(e);
         }
+        return Optional.empty();
     }
 
     @Override

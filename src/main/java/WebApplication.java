@@ -13,12 +13,13 @@ public class WebApplication {
     static SessionDB sessionDB;
     static ArticleDB articleDB;
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args)  throws Exception {
         setMemDB();
+//        setH2DB();
 
         List<Handler> codeStargramHandlers = List.of(
                 new LoginHandler(userDB, sessionDB),
-                new UserHandler(userDB),
+                new UserHandler(userDB, sessionDB),
                 new ArticleHandler(userDB, sessionDB, articleDB)
         );
 
