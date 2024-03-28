@@ -1,13 +1,15 @@
 package application.handler.utils;
 
-import application.db.Database;
+import application.db.memoryDB.MemUserDB;
 import application.model.Article;
 import application.model.User;
 
+import java.util.List;
+
 public class HtmlMaker {
     public static String getArticlePage(Article article , String template, int index){
-        String nextPath = "/main/article?index=" + (index + 2);
-        String prevPath = "/main/article?index=" + (index);
+        String nextPath = "/main/article?index=" + (index + 1);
+        String prevPath = "/main/article?index=" + (index - 1);
 
         return template
                 .replace("article_image" , "\"data:image/;base64," + article.getEncodedImg()+"\"")
@@ -17,7 +19,7 @@ public class HtmlMaker {
                 .replace("prev_article", prevPath);
     }
 
-    public static String getListHtml(){
+    public static String getListHtml(List<User> users){
         StringBuilder sb = new StringBuilder();
         sb.append("""
                 <!DOCTYPE html>
@@ -30,7 +32,7 @@ public class HtmlMaker {
                 <body>
                 """);
 
-        for(User user : Database.findAll()){
+        for(User user : users){
             sb.append("<br>");
             sb.append(user.getName());
         }

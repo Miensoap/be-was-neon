@@ -1,36 +1,37 @@
-package application.db;
+package application.db.memoryDB;
 
+import application.db.interfaces.UserDB;
 import application.model.User;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Database {
-    private static Map<String, User> users = new HashMap<>();
+public class MemUserDB implements UserDB {
+    private Map<String, User> users = new HashMap<>();
 
-    static {
+    public MemUserDB(){
         addUser(new User("tester" , "1234" , "테스트" , "test@naver.com"));
     }
 
-    public static void addUser(User user) {
+    public void addUser(User user) {
         if(contains(user)) throw new IllegalArgumentException("이미 존재하는 회원 id");
         users.put(user.getUserId(), user);
     }
 
-    public static User findUserById(String userId) throws NullPointerException{
+    public User findUserById(String userId) throws NullPointerException{
         return users.get(userId);
     }
 
-    public static Collection<User> findAll() {
+    public Collection<User> findAll() {
         return users.values();
     }
 
-    public static void clear(){
+    public void clear(){
         users = new HashMap<>();
     }
 
-    private static boolean contains(User user){
+    private boolean contains(User user){
         return users.containsKey(user.getUserId());
     }
 }

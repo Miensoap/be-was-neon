@@ -1,10 +1,10 @@
 package webserver.HttpHandler;
 
-import application.db.SessionStore;
-import application.model.User;
 import webserver.HttpMessage.MessageBody;
 import webserver.HttpMessage.MessageHeader;
 import webserver.HttpMessage.Request;
+
+import java.util.Optional;
 
 
 public interface Handler {
@@ -18,7 +18,7 @@ public interface Handler {
 
     default boolean verifySession(Request request) {
         try {
-            if(getCookie(request) != null){
+            if(getSid(request) != null){
                 return true;
             }
         } catch (NullPointerException | ArrayIndexOutOfBoundsException noCookieSid) {
@@ -27,7 +27,8 @@ public interface Handler {
         return false;
     }
 
-    default User getCookie(Request request) {
-        return SessionStore.getSession(request.getHeaderValue("Cookie").split("sid=")[1]);
+    default String getSid(Request request) {
+        Optional<String> sessionUserName = request.getCookie("sid");
+        return sessionUserName.map(s -> s.split("=")[1]).orElse(null);
     }
 }

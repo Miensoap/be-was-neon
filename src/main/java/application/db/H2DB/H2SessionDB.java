@@ -1,0 +1,87 @@
+package application.db.H2DB;
+
+import application.db.interfaces.SessionDB;
+import application.model.Session;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+public class H2SessionDB extends H2DataBase implements SessionDB {
+    private final Connection connection;
+
+    public H2SessionDB() throws SQLException {
+        this.connection = super.connection;
+    }
+
+    /**
+     * Session Id 에 해당하는 세션을 찾아 User Id 를 반환
+     * @param sessionId
+     * @return
+     */
+    @Override
+    public String getSession(String sessionId) {
+        String findByUserIdQuery = "SELECT * FROM Session WHERE sessionId = ?";
+        ResultSet resultSet;
+        try {
+            PreparedStatement query = connection.prepareStatement(findByUserIdQuery);
+            query.setString(1 , sessionId);
+            resultSet = query.executeQuery();
+
+            if(!resultSet.next()) return null;
+            return resultSet.getString("userId");
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void addSession(Session session) {
+        String addSessionQuery = "INSERT INTO Session (sessionId, userId) VALUES (? , ?);";
+        try {
+            PreparedStatement query = connection.prepareStatement(addSessionQuery);
+            query.setString(1, session.getSessionId());
+            query.setString(2 , session.getUserId());
+            query.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    @Override
+    public void removeSession(String sessionId) {
+        String removeSessionQuery = "DELETE FROM Session WHERE userId = ?;";
+        try {
+            PreparedStatement query = connection.prepareStatement(removeSessionQuery);
+            query.setString(1 , sessionId);
+            query.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public int getSize() {
+        String getSizeQuery = "SELECT COUNT(*) FROM Session;";
+        try {
+            PreparedStatement query = connection.prepareStatement(getSizeQuery);
+            ResultSet resultSet = query.executeQuery();
+            return resultSet.getInt(1);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void clear() {
+        String clearQuery = "DELETE FROM Session";
+        try {
+            PreparedStatement query = connection.prepareStatement(clearQuery);
+            query.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+}

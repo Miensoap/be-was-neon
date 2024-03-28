@@ -1,6 +1,6 @@
 package application.handler;
 
-import application.db.Database;
+import application.db.interfaces.UserDB;
 import application.handler.utils.HtmlMaker;
 import application.model.User;
 import org.slf4j.Logger;
@@ -11,6 +11,9 @@ import webserver.HttpMessage.*;
 import webserver.HttpHandler.Mapping.GetMapping;
 import webserver.HttpHandler.Mapping.PostMapping;
 import webserver.HttpMessage.constants.eums.FileType;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static webserver.HttpMessage.constants.WebServerConst.HTTP_VERSION;
 import static webserver.HttpMessage.constants.WebServerConst.LOCATION;
@@ -24,6 +27,11 @@ public class UserHandler implements Handler {
     private MessageBody responseBody;
 
     private static final Logger log = LoggerFactory.getLogger(ResourceHandler.class);
+    private final UserDB userDB;
+
+    public UserHandler(UserDB userDB){
+        this.userDB = userDB;
+    }
 
     @PostMapping(path = "/registration")
     public Response createUser(Request request) {
@@ -37,7 +45,7 @@ public class UserHandler implements Handler {
                     reqBody.getContentByKey("email")
             );
 
-            Database.addUser(user);
+            userDB.addUser(user);
             log.info("User Created : " + user.getUserId());
         } catch (IllegalArgumentException fail) {
             log.info("Fail to create new user : " + fail.getMessage());
@@ -59,7 +67,10 @@ public class UserHandler implements Handler {
         }
 
         startLine = new ResponseStartLine(HTTP_VERSION, OK);
-        responseBody = new MessageBody(HtmlMaker.getListHtml(), FileType.HTML);
+
+        List<User> users = new ArrayList<>();
+        users.addAll(userDB.findAll());
+        responseBody = new MessageBody(HtmlMaker.getListHtml(users), FileType.HTML);
         responseHeader = writeContentResponseHeader(responseBody);
 
         return new Response(startLine).header(responseHeader).body(responseBody);

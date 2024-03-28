@@ -1,7 +1,10 @@
 package application.handler;
 
-import application.db.Database;
-import application.db.SessionStore;
+import application.db.interfaces.SessionDB;
+import application.db.interfaces.UserDB;
+import application.db.memoryDB.MemUserDB;
+import application.db.memoryDB.MemSessionDB;
+import application.model.Session;
 import application.model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,18 +25,29 @@ public class LoginHandler implements Handler {
     private MessageBody responseBody;
 
     private static final Logger log = LoggerFactory.getLogger(ResourceHandler.class);
+    private final UserDB userDB;
+    private final SessionDB sessionDB;
+
+    public LoginHandler(UserDB userDB, SessionDB sessionDB){
+        this.userDB = userDB;
+        this.sessionDB = sessionDB;
+    }
 
     @PostMapping(path = "/login")
     public Response login(Request request) {
         MessageBody requestBody = request.getBody();
-        User user = Database.findUserById(requestBody.getContentByKey(USER_ID));
-
+        User user = userDB.findUserById(requestBody.getContentByKey(USER_ID));
         responseHeader = MessageHeader.builder().field(LOCATION, "/").build();
 
         try {
             if (user.isCorrectPassword(requestBody.getContentByKey(USER_PW))) {
-                String cookie = responseHeader.addCookie(10, "sid");
-                SessionStore.addSession(cookie, user);
+                String cookie;
+                while (true) {
+                    cookie = responseHeader.addCookie(10, "sid");
+                    if (sessionDB.getSession(cookie) == null) break;
+                }
+
+                sessionDB.addSession(new Session(cookie, user.getUserId()));
                 log.info("login : " + user.getName());
             } else {
                 log.info("login failed : password mismatch");
@@ -48,8 +62,8 @@ public class LoginHandler implements Handler {
 
     @PostMapping(path = "/logout")
     public Response logout(Request request) {
-        String cookie = request.getHeaderValue(COOKIE).split("sid=")[1];
-        SessionStore.removeSession(cookie);
+        String cookie = getSid(request);
+        sessionDB.removeSession(cookie);
         log.info("logout");
 
         startLine = new ResponseStartLine(HTTP_VERSION, FOUND);
@@ -66,7 +80,10 @@ public class LoginHandler implements Handler {
         String path = request.getStartLine().getUri();
 
         if (verifySession(request)) {
-            User user = getCookie(request);
+            User user = userDB.findUserById(sessionDB.getSession(getSid(request)));
+            // 로그아웃 하지 않고 서버를 종료해서 쿠키는 남아있는데 MemDB에 유저가 없는 경우 처리
+            if(user == null) return resourceHandler.responseGet(request);
+
             Response mainIndex = resourceHandler.responseGet(new Request("GET /main " + HTTP_VERSION));
 
             String loginUserIndexPage = new String(mainIndex.getBody()).replace("<!--UserName-->", user.getName());

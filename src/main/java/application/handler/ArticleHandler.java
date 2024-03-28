@@ -1,5 +1,8 @@
 package application.handler;
 
+import application.db.interfaces.ArticleDB;
+import application.db.interfaces.SessionDB;
+import application.db.interfaces.UserDB;
 import application.handler.utils.HtmlMaker;
 import application.model.Article;
 import application.model.User;
@@ -20,14 +23,26 @@ import static webserver.HttpMessage.constants.eums.FileType.*;
 import static webserver.HttpMessage.constants.eums.ResponseStatus.*;
 
 public class ArticleHandler implements Handler {
+    // Response
     private ResponseStartLine startLine;
     private MessageHeader responseHeader;
     private MessageBody responseBody;
 
-
+    // Handler
     private static final ResourceHandler resourceHandler = new ResourceHandler();
     private static final ErrorHandler errorHandler = new ErrorHandler();
-    private final List<Article> articleList = new ArrayList<>();
+
+    //DB
+    private final UserDB userDB;
+    private final SessionDB sessionDB;
+    private final ArticleDB articleDB;
+
+    public ArticleHandler(UserDB userDB, SessionDB sessionDB , ArticleDB articleDB){
+        this.userDB = userDB;
+        this.sessionDB = sessionDB;
+        this.articleDB = articleDB;
+    }
+
 
     @PostMapping(path = "/article")
     public Response postArticle(Request request) {
@@ -44,34 +59,36 @@ public class ArticleHandler implements Handler {
         Base64.Decoder decoder = Base64.getDecoder();
         MessageBody requestBody = request.getBody();
 
-        String writer = getCookie(request).getName();
+        String writer = userDB.findUserById(sessionDB.getSession(getSid(request))).getName();
         String content = new String(decoder.decode(requestBody.getMultiContent(TXT)));
         String encodedImg = requestBody.getMultiContent(PNG);
 
-        articleList.add(new Article(content , encodedImg , writer));
+        articleDB.addArticle(new Article(content , encodedImg , writer));
 
         System.out.println("Article added : " + content);
 
-        return articleList.size();
+        return articleDB.getSize();
     }
 
     @GetMapping(path = "/main/article")
     public Response getArticle(Request request) {
         Request mainReq = new Request(GET + " /main " + HTTP_VERSION);
-        int index = Integer.parseInt(request.getRequestQuery("index")) - 1;
+        int index = Integer.parseInt(request.getRequestQuery("index"));
 
         // 처음 ,마지막 글에서 이동 버튼 클릭 처리
-        if(index==-1) index+=1;
-        if(index==articleList.size()) index-=1;
+        if(index==0) index+=1;
+        else if(index==articleDB.getSize()+1) index-=1;
 
+        Article article = articleDB.getArticle(index);
         // 존재하지 않는 글에 접근 처리
-        if (index>articleList.size()){
+        if (article==null){
             return errorHandler.getErrorResponse(NotFound);
         }
 
+        // 정상 흐름 응답
         startLine = new ResponseStartLine(HTTP_VERSION, OK);
         responseBody = new MessageBody(
-                HtmlMaker.getArticlePage(articleList.get(index), new String(resourceHandler.responseGet(mainReq).getBody()), index), HTML);
+                HtmlMaker.getArticlePage(article, new String(resourceHandler.responseGet(mainReq).getBody()), index), HTML);
 
         responseHeader = writeContentResponseHeader(responseBody);
         return new Response(startLine).header(responseHeader).body(responseBody);

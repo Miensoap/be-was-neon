@@ -1,8 +1,11 @@
 package webserver.HttpMessage;
 
+import java.util.Arrays;
+import java.util.Optional;
 import java.util.StringJoiner;
 
 import static webserver.HttpMessage.constants.WebServerConst.CRLF;
+import static webserver.HttpMessage.constants.WebServerConst.VALUE_DELIM;
 
 public class Request {
     private final RequestStartLine startLine;
@@ -29,6 +32,11 @@ public class Request {
 
     public String getHeaderValue(String key) {
         return header.getHeaderFields().get(key);
+    }
+
+    public Optional<String> getCookie(String name){
+        String[] cookie = getHeaderValue("Cookie").split(VALUE_DELIM);
+        return Arrays.stream(cookie).filter(s->s.startsWith(name + "=")).findAny();
     }
 
     public RequestStartLine getStartLine() {

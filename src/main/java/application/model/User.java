@@ -26,6 +26,9 @@ public class User {
     public String getEmail() {
         return email;
     }
+    public String getPassWord() {
+        return this.password;
+    }
 
     public boolean isCorrectPassword(String password){
         return password.equals(this.password);
@@ -35,4 +38,6 @@ public class User {
     public String toString() {
         return "User [userId=" + userId + ", password=" + password + ", name=" + name + ", email=" + email + "]";
     }
+
+
 }
