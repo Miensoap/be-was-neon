@@ -45,7 +45,7 @@ public class H2UserDB extends H2DataBase implements UserDB {
         try (PreparedStatement query = getConnection().prepareStatement(findByUserIdQuery)) {
             query.setString(1, userId);
             try(ResultSet resultSet = query.executeQuery()){
-                return convertRowToUser(resultSet);
+                if(resultSet.next()) return convertRowToUser(resultSet);
             }
         } catch (SQLException e) {
         }
@@ -55,10 +55,11 @@ public class H2UserDB extends H2DataBase implements UserDB {
     @Override
     public Collection<User> findAll() {
         String findAllQuery = "SELECT * FROM BE_User";
+        Map<String, User> users = new HashMap<>();
 
         try (PreparedStatement query = getConnection().prepareStatement(findAllQuery)) {
             try(ResultSet resultSet = query.executeQuery()) {
-                Map<String, User> users = new HashMap<>();
+
                 while (resultSet.next()) {
                     users.put(resultSet.getString("userid"), convertRowToUser(resultSet).get());
                 }
@@ -72,7 +73,6 @@ public class H2UserDB extends H2DataBase implements UserDB {
     private Optional<User> convertRowToUser(ResultSet resultSet) {
         String id, password, name, email;
         try {
-            resultSet.next();
             id = resultSet.getString("USERID");
             password = resultSet.getString("PASSWORD");
             name = resultSet.getString("USERNAME");
