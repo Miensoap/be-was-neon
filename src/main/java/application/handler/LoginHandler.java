@@ -13,10 +13,12 @@ import webserver.HttpHandler.ResourceHandler;
 import webserver.HttpMessage.*;
 import webserver.HttpMessage.constants.eums.FileType;
 
+import java.util.Optional;
+
 import static webserver.HttpMessage.constants.WebServerConst.*;
 import static webserver.HttpMessage.constants.eums.ResponseStatus.FOUND;
 
-public class LoginHandler implements Handler , Authorizer{
+public class LoginHandler implements Handler, Authorizer {
 
     private ResponseStartLine startLine;
     private MessageHeader responseHeader;
@@ -26,7 +28,7 @@ public class LoginHandler implements Handler , Authorizer{
     private final UserDB userDB;
     private final SessionDB sessionDB;
 
-    public LoginHandler(UserDB userDB, SessionDB sessionDB){
+    public LoginHandler(UserDB userDB, SessionDB sessionDB) {
         this.userDB = userDB;
         this.sessionDB = sessionDB;
     }
@@ -34,25 +36,25 @@ public class LoginHandler implements Handler , Authorizer{
     @PostMapping(path = "/login")
     public Response login(Request request) {
         MessageBody requestBody = request.getBody();
-        User user = userDB.findUserById(requestBody.getContentByKey(USER_ID)).get();
-        responseHeader = MessageHeader.builder().field(LOCATION, "/").build();
-
-        try {
-            if (user.isCorrectPassword(requestBody.getContentByKey(USER_PW))) {
-                String cookie = setCookie();
-
-                sessionDB.addSession(new Session(cookie, user.getUserId()));
-                log.info("login : " + user.getName());
-            } else {
-                log.info("login failed : password mismatch");
-                return redirectToLogin();
-            }
-        } catch (NullPointerException notExistUser) {
-            log.info("login failed : notExistUser");
+        Optional<User> userOptional = userDB.findUserById(requestBody.getContentByKey(USER_ID));
+        if(userOptional.isEmpty()){
             return redirectToLogin();
         }
 
+        responseHeader = MessageHeader.builder().field(LOCATION, "/").build();
         startLine = new ResponseStartLine(HTTP_VERSION, FOUND);
+
+        User user= userOptional.get();
+        if (user.isCorrectPassword(requestBody.getContentByKey(USER_PW))) {
+            String cookie = setCookie();
+
+            sessionDB.addSession(new Session(cookie, user.getUserId()));
+            log.info("login : " + user.getName());
+        } else {
+            log.info("login failed : password mismatch");
+            return redirectToLogin();
+        }
+
         return new Response(startLine).header(responseHeader);
     }
 
@@ -65,7 +67,7 @@ public class LoginHandler implements Handler , Authorizer{
         startLine = new ResponseStartLine(HTTP_VERSION, FOUND);
         responseHeader = MessageHeader.builder()
                 .field(LOCATION, "/")
-                .field("Set-Cookie" , "sid=; max-age=1")
+                .field("Set-Cookie", "sid=; max-age=1")
                 .build();
         return new Response(startLine).header(responseHeader);
     }

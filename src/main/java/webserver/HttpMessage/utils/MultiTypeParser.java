@@ -32,8 +32,8 @@ public class MultiTypeParser {
     }
 
     private void readeOneBlock(byte[] content) throws IOException {
-        if(Arrays.equals(content , "--".getBytes())) return; // End of Body
-        if(content.length == 0) return;
+//        if(Arrays.equals(content , "--".getBytes())) return; // End of Body
+//        if(content.length == 0) return;
 
         BufferedInputStream bis;
         FileType fileType;

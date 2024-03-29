@@ -5,25 +5,31 @@ import application.db.interfaces.SessionDB;
 import application.db.interfaces.UserDB;
 import application.handler.utils.HtmlMaker;
 import application.model.Article;
-import application.model.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import webserver.HttpHandler.ErrorHandler;
 import webserver.HttpHandler.Handler;
 import webserver.HttpHandler.Mapping.GetMapping;
 import webserver.HttpHandler.Mapping.PostMapping;
 import webserver.HttpHandler.ResourceHandler;
 import webserver.HttpMessage.*;
+import webserver.HttpMessage.constants.eums.FileType;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Base64;
+import java.util.Optional;
 
 import static webserver.HttpMessage.constants.WebServerConst.*;
-import static webserver.HttpMessage.constants.eums.FileType.*;
+import static webserver.HttpMessage.constants.eums.FileType.HTML;
+import static webserver.HttpMessage.constants.eums.FileType.TXT;
 import static webserver.HttpMessage.constants.eums.ResponseStatus.*;
 import static webserver.WebServer.staticSourcePath;
 
-public class ArticleHandler implements Handler , Authorizer{
+public class ArticleHandler implements Handler, Authorizer {
+    private final Logger log = LoggerFactory.getLogger(this.getClass());
+
     // Response
     private ResponseStartLine startLine;
     private MessageHeader responseHeader;
@@ -38,7 +44,7 @@ public class ArticleHandler implements Handler , Authorizer{
     private final SessionDB sessionDB;
     private final ArticleDB articleDB;
 
-    public ArticleHandler(UserDB userDB, SessionDB sessionDB , ArticleDB articleDB){
+    public ArticleHandler(UserDB userDB, SessionDB sessionDB, ArticleDB articleDB) {
         this.userDB = userDB;
         this.sessionDB = sessionDB;
         this.articleDB = articleDB;
@@ -48,18 +54,18 @@ public class ArticleHandler implements Handler , Authorizer{
     public Response postArticle(Request request) throws IOException {
         String writer = userDB.findUserById(sessionDB.getSession(getSid(request)).get()).get().getName();
 
-        int newArticleIndex = createArticle(request.getBody() , writer);
+        int newArticleIndex = createArticle(request.getBody(), writer);
 
-        startLine = new ResponseStartLine(HTTP_VERSION , FOUND);
+        startLine = new ResponseStartLine(HTTP_VERSION, FOUND);
         responseHeader = MessageHeader.builder()
-                .field(LOCATION , "/main/article?index=" + newArticleIndex).build();
+                .field(LOCATION, "/main/article?index=" + newArticleIndex).build();
 
         return new Response(startLine).header(responseHeader).body(responseBody);
     }
 
     @GetMapping(path = "/article")
-    public Response getWritePage(Request request){
-        if(sessionDB.getSession(getSid(request)).isEmpty()) return redirectToLogin();
+    public Response getWritePage(Request request) {
+        if (sessionDB.getSession(getSid(request)).isEmpty()) return redirectToLogin();
 
         return resourceHandler.responseGet(request);
     }
@@ -70,12 +76,12 @@ public class ArticleHandler implements Handler , Authorizer{
         int index = Integer.parseInt(request.getRequestQuery("index"));
 
         // 처음 ,마지막 글에서 이동 버튼 클릭 처리
-        if(index==0) index+=1;
-        else if(index==articleDB.getSize()+1) index-=1;
+        if (index == 0) index += 1;
+        else if (index == articleDB.getSize() + 1) index -= 1;
 
         Article article = articleDB.getArticle(index);
         // 존재하지 않는 글에 접근 처리
-        if (article==null){
+        if (article == null) {
             return errorHandler.getErrorResponse(NotFound);
         }
 
@@ -88,27 +94,35 @@ public class ArticleHandler implements Handler , Authorizer{
         return new Response(startLine).header(responseHeader).body(responseBody);
     }
 
-    private int createArticle(MessageBody messageBody , String writer) throws IOException {
+    private int createArticle(MessageBody messageBody, String writer) throws IOException {
         Base64.Decoder decoder = Base64.getDecoder();
-        byte[] decodedImg = decoder.decode(messageBody.getMultiContent(PNG));
-        int currentIndex = articleDB.getSize()+1;
+        int currentIndex = articleDB.getSize() + 1;
+        String filePath;
+        String content;
 
-        String content = new String(decoder.decode(messageBody.getMultiContent(TXT)));
-        String filePath = writeToFilePNG(decodedImg , currentIndex+".png");
+        Optional<FileType> imageType = FileType.imageTypes().stream().filter(ft -> messageBody.getMultiContent(ft) != null).findAny();
+        if (imageType.isPresent()) {
+            byte[] decodedImg = decoder.decode(messageBody.getMultiContent(imageType.get()));
+            filePath = writeToFile(decodedImg, "post" + currentIndex, "." + imageType.get().toString().toLowerCase());
+        } else filePath = "/img/foo.png";
 
-        articleDB.addArticle(new Article(content , filePath , writer, currentIndex));
+        if (messageBody.getMultiContent(TXT) != null) {
+            content = new String(decoder.decode(messageBody.getMultiContent(TXT)));
+        }else content = "No content";
 
-        System.out.println("Article added : " + content);
 
+        articleDB.addArticle(new Article(content, filePath, writer, currentIndex));
+        log.info(writer + "'s Article added : " + content);
         return currentIndex;
     }
 
-    private String writeToFilePNG(byte[] content , String fileName) throws IOException {
-        String filePath = "/img/post/"+fileName;
+    private String writeToFile(byte[] content, String fileName, String extend) throws IOException {
+        String filePath = "/img/post/" + fileName + extend;
         OutputStream outputStream = new FileOutputStream(staticSourcePath + filePath);
         outputStream.write(content);
         outputStream.close();
 
+        log.info("file saved : " + filePath);
         return filePath;
     }
 }
