@@ -24,13 +24,14 @@ public class H2UserDB extends H2DataBase implements UserDB {
         if (findUserById(user.getUserId()).isPresent()) throw new IllegalArgumentException("이미 존재하는 회원 ID");
 
         String createUserQuery = "INSERT INTO BE_User (userId, password, userName, email) VALUES (?, ?, ?, ?)";
-        try {
-            PreparedStatement query = connection.prepareStatement(createUserQuery);
+
+        try (PreparedStatement query = getConnection().prepareStatement(createUserQuery)) {
             query.setString(1, user.getUserId());
             query.setString(2, user.getPassWord());
             query.setString(3, user.getName());
             query.setString(4, user.getEmail());
             query.executeUpdate();
+
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -41,36 +42,28 @@ public class H2UserDB extends H2DataBase implements UserDB {
     public Optional<User> findUserById(String userId) {
         String findByUserIdQuery = "SELECT * FROM BE_User WHERE userId = ?";
 
-        ResultSet resultSet;
-        try {
-            PreparedStatement query = connection.prepareStatement(findByUserIdQuery);
+        try (PreparedStatement query = getConnection().prepareStatement(findByUserIdQuery)) {
             query.setString(1, userId);
-            resultSet = query.executeQuery();
-            System.out.println(resultSet.next());
-
-            if(resultSet.next()) return convertRowToUser(resultSet);
+            try(ResultSet resultSet = query.executeQuery()){
+                return convertRowToUser(resultSet);
+            }
         } catch (SQLException e) {
         }
-         return Optional.empty();
+        return Optional.empty();
     }
 
     @Override
     public Collection<User> findAll() {
         String findAllQuery = "SELECT * FROM BE_User";
 
-        ResultSet resultSet;
-        try {
-            PreparedStatement query = connection.prepareStatement(findAllQuery);
-            resultSet = query.executeQuery();
-
-            Map<String, User> users = new HashMap<>();
-
-//            users.put(resultSet.getString("userid"), convertRowToUser(resultSet).get());
-            while (resultSet.next()) {
-                users.put(resultSet.getString("userid"), convertRowToUser(resultSet).get());
+        try (PreparedStatement query = getConnection().prepareStatement(findAllQuery)) {
+            try(ResultSet resultSet = query.executeQuery()) {
+                Map<String, User> users = new HashMap<>();
+                while (resultSet.next()) {
+                    users.put(resultSet.getString("userid"), convertRowToUser(resultSet).get());
+                }
+                return users.values();
             }
-
-            return users.values();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -78,14 +71,14 @@ public class H2UserDB extends H2DataBase implements UserDB {
 
     private Optional<User> convertRowToUser(ResultSet resultSet) {
         String id, password, name, email;
-
         try {
+            resultSet.next();
             id = resultSet.getString("USERID");
             password = resultSet.getString("PASSWORD");
             name = resultSet.getString("USERNAME");
             email = resultSet.getString("EMAIL");
 
-            return Optional.of(new User(id , password , name , email));
+            return Optional.of(new User(id, password, name, email));
         } catch (SQLException fail) {
             return Optional.empty();
         }
@@ -96,8 +89,9 @@ public class H2UserDB extends H2DataBase implements UserDB {
         String clearQuery = "DELETE FROM BE_User";
 
         try {
-            PreparedStatement query = connection.prepareStatement(clearQuery);
-            query.executeUpdate();
+            try (PreparedStatement query = getConnection().prepareStatement(clearQuery)) {
+                query.executeUpdate();
+            }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

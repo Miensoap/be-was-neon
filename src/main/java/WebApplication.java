@@ -14,8 +14,8 @@ public class WebApplication {
     static ArticleDB articleDB;
 
     public static void main(String[] args)  throws Exception {
-        setMemDB();
-//        setH2DB();
+//        setMemDB();
+        setH2DB();
 
         List<Handler> codeStargramHandlers = List.of(
                 new LoginHandler(userDB, sessionDB),
@@ -38,5 +38,7 @@ public class WebApplication {
         userDB = new H2UserDB();
         sessionDB = new H2SessionDB();
         articleDB = new H2ArticleDB();
+
+        sessionDB.clear();
     }
 }

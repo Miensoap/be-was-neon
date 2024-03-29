@@ -12,4 +12,8 @@ public abstract class H2DataBase {
     public H2DataBase() throws SQLException {
         connection = DriverManager.getConnection(url , id , password);
     }
+
+    public Connection getConnection() throws SQLException {
+        return DriverManager.getConnection(url, id , password);
+    }
 }

@@ -23,7 +23,7 @@ class MemSessionDBTest {
     void addSession() {
         sessionDB.addSession(new Session("1234", user.getUserId()));
 
-        assertThat(sessionDB.getSession("1234")).isEqualTo(user.getUserId());
+        assertThat(sessionDB.getSession("1234").get()).isEqualTo(user.getUserId());
     }
 
     @Test
@@ -32,6 +32,6 @@ class MemSessionDBTest {
         sessionDB.addSession(new Session("12345", user.getUserId()));
         sessionDB.removeSession("12345");
 
-        assertThat(sessionDB.getSession("12345")).isEqualTo(null);
+        assertThat(sessionDB.getSession("12345")).isEmpty();
     }
 }

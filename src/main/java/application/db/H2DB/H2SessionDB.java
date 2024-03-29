@@ -19,19 +19,19 @@ public class H2SessionDB extends H2DataBase implements SessionDB {
 
     /**
      * Session Id 에 해당하는 세션을 찾아 User Id 를 반환
+     *
      * @param sessionId
      * @return
      */
     @Override
     public Optional<String> getSession(String sessionId) {
         String findByUserIdQuery = "SELECT * FROM Session WHERE sessionId = ?";
-        ResultSet resultSet;
-        try {
-            PreparedStatement query = connection.prepareStatement(findByUserIdQuery);
-            query.setString(1 , sessionId);
-            resultSet = query.executeQuery();
 
-            return Optional.of(resultSet.getString("userId"));
+        try (PreparedStatement query = connection.prepareStatement(findByUserIdQuery)) {
+            query.setString(1, sessionId);
+            try (ResultSet resultSet = query.executeQuery()) {
+                if(resultSet.next()) return Optional.of(resultSet.getString("userId"));
+            }
         } catch (SQLException e) {
         }
         return Optional.empty();
@@ -43,7 +43,7 @@ public class H2SessionDB extends H2DataBase implements SessionDB {
         try {
             PreparedStatement query = connection.prepareStatement(addSessionQuery);
             query.setString(1, session.getSessionId());
-            query.setString(2 , session.getUserId());
+            query.setString(2, session.getUserId());
             query.executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -56,7 +56,7 @@ public class H2SessionDB extends H2DataBase implements SessionDB {
         String removeSessionQuery = "DELETE FROM Session WHERE sessionId = ?;";
         try {
             PreparedStatement query = connection.prepareStatement(removeSessionQuery);
-            query.setString(1 , sessionId);
+            query.setString(1, sessionId);
             query.executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -66,10 +66,10 @@ public class H2SessionDB extends H2DataBase implements SessionDB {
     @Override
     public int getSize() {
         String getSizeQuery = "SELECT COUNT(*) FROM Session;";
-        try {
-            PreparedStatement query = connection.prepareStatement(getSizeQuery);
-            ResultSet resultSet = query.executeQuery();
-            return resultSet.getInt(1);
+        try (PreparedStatement query = connection.prepareStatement(getSizeQuery)){
+            try(ResultSet resultSet = query.executeQuery()) {
+                return resultSet.getInt(1);
+            }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

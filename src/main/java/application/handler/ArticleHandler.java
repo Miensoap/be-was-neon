@@ -53,7 +53,6 @@ public class ArticleHandler implements Handler, Authorizer {
     @PostMapping(path = "/article")
     public Response postArticle(Request request) throws IOException {
         String writer = userDB.findUserById(sessionDB.getSession(getSid(request)).get()).get().getName();
-
         int newArticleIndex = createArticle(request.getBody(), writer);
 
         startLine = new ResponseStartLine(HTTP_VERSION, FOUND);
