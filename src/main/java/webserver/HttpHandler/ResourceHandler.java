@@ -20,6 +20,12 @@ public class ResourceHandler implements Handler {
 
     private static final Logger log = LoggerFactory.getLogger(ResourceHandler.class);
 
+    /**
+     * 리소스 요청에 응답
+     * 해당 경로에 파일이 없다면 404 페이지 응답
+     * @param request
+     * @return
+     */
     public Response responseGet(Request request) {
         String path = request.getStartLine().getUri();
 

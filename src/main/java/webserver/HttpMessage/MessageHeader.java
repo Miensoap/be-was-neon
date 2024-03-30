@@ -20,10 +20,17 @@ public class MessageHeader {
         return new HeaderBuilder();
     }
 
+    /**
+     * HTTP 메시지에 Body가 존재하는지 여부를 반환
+     * @return
+     */
     public boolean hasContent() {
         return headerFields.containsKey(CONTENT_TYPE) && headerFields.containsKey(CONTENT_LEN);
     }
 
+    /**
+     * 헤더 생성에 사용하는 Builder
+     */
     public static class HeaderBuilder {
         private final Map<String, String> headerFields = new HashMap<>();
 
@@ -37,10 +44,19 @@ public class MessageHeader {
         }
     }
 
+    /**
+     * 헤더 필드가 저장된 불변 Map을 반환
+     * @return
+     */
     public Map<String, String> getHeaderFields() {
         return Collections.unmodifiableMap(headerFields);
     }
 
+    /**
+     * 헤더 필드를 추가
+     * @param key
+     * @param value
+     */
     public void addHeaderField(String key, String value) {
         headerFields.put(key, value);
     }
@@ -56,6 +72,12 @@ public class MessageHeader {
         return sb.toString();
     }
 
+    /**
+     * 쿠키의 길이 , 이름을 전달받아 생성해 헤더에 추가
+     * @param length 길이
+     * @param cookieName 이름
+     * @return 생성한 쿠키 값
+     */
     public String addCookie(int length, String cookieName) {
         String newCookie = makeCookie(length);
         ZonedDateTime dateTime = ZonedDateTime.now().plus(1, ChronoUnit.MINUTES);
@@ -72,6 +94,11 @@ public class MessageHeader {
         return newCookie;
     }
 
+    /**
+     * 지정한 길이의 무작위 문자열 쿠키 값 생성
+     * @param length 길이
+     * @return 쿠키 값
+     */
     private String makeCookie(int length) {
         Random random = new Random();
         StringBuilder sb = new StringBuilder();

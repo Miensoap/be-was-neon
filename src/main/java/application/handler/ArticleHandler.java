@@ -56,6 +56,13 @@ public class ArticleHandler implements Handler, Authorizer {
         this.commentDB = commentDB;
     }
 
+    /**
+     * 글 게시 요청에 응답
+     * 작성한 글을 DB에 저장 후 해당 게시글로 리다이렉트
+     * @param request
+     * @return
+     * @throws IOException
+     */
     @PostMapping(path = "/article")
     public Response postArticle(Request request) throws IOException {
         String writer = userDB.findUserById(sessionDB.getSession(getSid(request)).get()).get().getName(); // optional 사용해서 이상해짐
@@ -64,6 +71,12 @@ public class ArticleHandler implements Handler, Authorizer {
         return redirectTo(ARTICLE_URL + newArticleIndex);
     }
 
+    /**
+     * 게시글 작성 페이지 요청에 응답
+     * 로그인 하지 않은 상태라면 로그인 페이지로 리다이렉트
+     * @param request
+     * @return
+     */
     @GetMapping(path = "/article")
     public Response getWritePage(Request request) {
         if (sessionDB.getSession(getSid(request)).isEmpty()) return redirectToLogin(); // 이부분 중복 많은데 SessionDB를 필드로 가지는 추상클래스?
@@ -71,6 +84,13 @@ public class ArticleHandler implements Handler, Authorizer {
         return resourceHandler.responseGet(request);
     }
 
+    /**
+     * 게시글 조회 요청에 응답
+     * 게시글 인덱스에 따라 이전 / 다음 글 버튼의 링크를 수정
+     * 존재하지 않는 글에 접근시 404 응답
+     * @param request
+     * @return
+     */
     @GetMapping(path = "/main/article")
     public Response getArticle(Request request) {
         int index = Integer.parseInt(request.getRequestQuery("index"));
@@ -98,6 +118,13 @@ public class ArticleHandler implements Handler, Authorizer {
         return new Response(startLine).header(responseHeader).body(responseBody);
     }
 
+    /**
+     * 게시글을 DB에 저장
+     * @param messageBody 글 게시 요청 본문 (사진 + 내용)
+     * @param writer 작성자
+     * @return
+     * @throws IOException 파일로 저장중 예외
+     */
     private int createArticle(MessageBody messageBody, String writer) throws IOException {
         Base64.Decoder decoder = Base64.getDecoder();
         int currentIndex = articleDB.getSize() + 1;
@@ -117,6 +144,14 @@ public class ArticleHandler implements Handler, Authorizer {
         return currentIndex;
     }
 
+    /**
+     * 게시글의 사진을 파일로 저장
+     * @param content 사진의 byte 데이터
+     * @param fileName 저장할 이름
+     * @param extend 확장자
+     * @return
+     * @throws IOException
+     */
     private String writeToFile(byte[] content, String fileName, String extend) throws IOException {
         String filePath = "/img/post/" + fileName + extend;
         OutputStream outputStream = new FileOutputStream(staticSourcePath + filePath);
@@ -127,6 +162,11 @@ public class ArticleHandler implements Handler, Authorizer {
         return filePath;
     }
 
+    /**
+     * 지정한 인덱스의 게시글로 리다이렉트
+     * @param index 게시글 인덱스
+     * @return
+     */
     private Response redirectToArticle(int index){
         return  redirectTo("/main/article?index=" + index);
     }

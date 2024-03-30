@@ -19,6 +19,9 @@ public class SocketMessageHandler implements Runnable {
         this.matcher = mappingMatcher;
     }
 
+    /**
+     * HTTP 요청을 받아 요청에 맞는 HTTP 응답을 전송
+     */
     public void run() {
         log.debug("New Client Connect! Connected IP : {}, Port : {}", connection.getInetAddress(), connection.getPort());
 

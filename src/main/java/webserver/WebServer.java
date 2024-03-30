@@ -15,11 +15,15 @@ public class WebServer {
     private static final int DEFAULT_PORT = 8080;
     public static final String staticSourcePath = "./src/main/resources/static";
     private final MappingMatcher mappingMatcher;
-
     public WebServer(List<Handler> appHandlers) {
         this.mappingMatcher = new MappingMatcher(appHandlers);
     }
 
+    /**
+     * 웹 서버를 시작한다
+     * @param args 사용할 포트 번호 , 지정하지 않으면 8080 사용
+     * @throws Exception
+     */
     public void startServer(String[] args) throws Exception {
         int port = 0;
         if (args == null || args.length == 0) {

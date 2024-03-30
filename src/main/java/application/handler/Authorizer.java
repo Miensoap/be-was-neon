@@ -13,6 +13,11 @@ import static webserver.HttpMessage.constants.eums.ResponseStatus.FOUND;
 
 public interface Authorizer {
 
+    /**
+     * HTTP 요청 쿠키에서 sid 값을 추출
+     * @param request
+     * @return
+     */
     default String getSid(Request request) {
         Optional<String> sessionUserName = request.getCookie("sid");
         try {
@@ -22,6 +27,10 @@ public interface Authorizer {
         }
     }
 
+    /**
+     * 로그인 페이지로 리다이렉트하는 응답을 반환
+     * @return
+     */
     default Response redirectToLogin(){
         ResponseStartLine startLine = new ResponseStartLine(HTTP_VERSION, FOUND);
         MessageHeader responseHeader = MessageHeader.builder()

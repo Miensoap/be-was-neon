@@ -44,12 +44,23 @@ public class MessageBody {
         this.contentType = contentType;
     }
 
+    /**
+     * 멀티파트 타입 Body 생정자
+     * @param content
+     * @param boundary
+     * @throws IOException
+     */
     public MessageBody(byte[] content , String boundary) throws IOException {
         this.body = content;
         this.contentType = FileType.MULTIPART;
         this.multiContents = new MultiTypeParser(content , boundary).getParsed();
     }
 
+    /**
+     * File Path 사용하는 생성자
+     * @param file
+     * @throws IOException
+     */
     public MessageBody(File file) throws IOException {
         try (FileInputStream fis = new FileInputStream(file)) {
             body = new byte[(int) file.length()];
@@ -60,6 +71,13 @@ public class MessageBody {
         this.contentType = FileType.valueOf(fileName[fileName.length - 1].toUpperCase());
     }
 
+    /**
+     * key에 해당하는 Content value 반환
+     * (ex : urlencoded)
+     * @param key
+     * @return value
+     * @throws IllegalArgumentException
+     */
     public String getContentByKey(String key) throws IllegalArgumentException {
         String value = content.get(key);
 
@@ -67,6 +85,11 @@ public class MessageBody {
         return content.get(key);
     }
 
+    /**
+     * 멀티파트 타입 Body 에서 지정한 Content Type의 데이터를 반환
+     * @param fileType
+     * @return
+     */
     public String getMultiContent(FileType fileType){
         return this.multiContents.get(fileType);
     }

@@ -23,11 +23,14 @@ import static webserver.HttpMessage.constants.eums.ResponseStatus.OK;
 
 public class UserHandler implements Handler , Authorizer{
 
+    private static final Logger log = LoggerFactory.getLogger(ResourceHandler.class);
+
+    // Response
     private ResponseStartLine startLine;
     private MessageHeader responseHeader;
     private MessageBody responseBody;
 
-    private static final Logger log = LoggerFactory.getLogger(ResourceHandler.class);
+    // DB
     private final UserDB userDB;
     private final SessionDB sessionDB;
 
@@ -36,6 +39,13 @@ public class UserHandler implements Handler , Authorizer{
         this.sessionDB = sessionDB;
     }
 
+    /**
+     * 회원 가입 요청에 응답
+     * form 에 담긴 정보를 유저 DB에 저장하고 로그인 페이지로 리다이렉트
+     * 이미 존재하는 유저 ID라면 가입에 실패하고 회원가입
+     * @param request
+     * @return
+     */
     @PostMapping(path = "/registration")
     public Response createUser(Request request) {
         MessageBody reqBody = request.getBody();
@@ -53,13 +63,21 @@ public class UserHandler implements Handler , Authorizer{
              return redirectToLogin();
         } catch (IllegalArgumentException fail) {
             log.info("Fail to create new user : " + fail.getMessage());
+            redirectTo("/registration");
         }
 
         startLine = new ResponseStartLine(HTTP_VERSION, FOUND);
-        responseHeader = MessageHeader.builder().field(LOCATION , "/").build();
+        responseHeader = MessageHeader.builder().field(LOCATION , "/login").build();
         return new Response(startLine).header(responseHeader);
     }
 
+    /**
+     * 유저 리스트 조회 요청에 응답
+     * 로그인 된 상태라면 회원가입 된 유저들의 닉네임을 리스트로 보여줌
+     * 로그인 하지 않은 상태라면 로그인 페이지로 리다이렉트
+     * @param request
+     * @return
+     */
     @GetMapping(path = "/user/list")
     public Response userList(Request request) {
         if (sessionDB.getSession(getSid(request)).isEmpty()) {

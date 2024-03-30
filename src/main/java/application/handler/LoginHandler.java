@@ -33,6 +33,13 @@ public class LoginHandler implements Handler, Authorizer {
         this.sessionDB = sessionDB;
     }
 
+    /**
+     * 로그인 요청에 응답
+     * 계정 정보가 일치한다면 새 세션을 생성해 DB에 저장하고 해당 Cookie를 응답에 담음
+     * 일치하지 않는다면 로그인 페이지로 리다이렉트
+     * @param request
+     * @return
+     */
     @PostMapping(path = "/login")
     public Response login(Request request) {
         MessageBody requestBody = request.getBody();
@@ -60,6 +67,13 @@ public class LoginHandler implements Handler, Authorizer {
         return new Response(startLine).header(responseHeader);
     }
 
+    /**
+     * 로그아웃 요청에 응답
+     * 로그인 중인 세션을 DB에서 삭제하고 , 브라우저에서 만료시킴
+     * 기본 페이지로 리다이렉트
+     * @param request
+     * @return
+     */
     @PostMapping(path = "/logout")
     public Response logout(Request request) {
         String cookie = getSid(request);
@@ -69,6 +83,13 @@ public class LoginHandler implements Handler, Authorizer {
         return redirectTo("/").addHeaderField("Set-Cookie", "sid=; max-age=1");
     }
 
+    /**
+     * 메인 페이지 요청에 응답
+     * 로그인 한 상태라면 유저 닉네임을 우측 상단에 표시 , 웰컴 페이지 응답
+     * 로그인 하지 않은 상태라면 기본 페이지 응답
+     * @param request
+     * @return
+     */
     @GetMapping(path = "/")
     public Response loginUser(Request request) {
         ResourceHandler resourceHandler = new ResourceHandler();
@@ -89,6 +110,11 @@ public class LoginHandler implements Handler, Authorizer {
         return resourceHandler.responseGet(request);
     }
 
+    /**
+     * 응답 헤더에 세션 id 를 담은 쿠키를 추가
+     * 중복되는 id 가 생성되었다면 다시 시도
+     * @return
+     */
     private String setCookie() {
         String cookie;
         while (true) {

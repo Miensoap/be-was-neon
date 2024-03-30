@@ -19,6 +19,13 @@ import static webserver.HttpMessage.constants.WebServerConst.HTTP_VERSION;
 
 public class CommentHandler implements Handler , Authorizer{
 
+    /**
+     * 댓글 작성 form 요청에 응답
+     * 로그인 하지 않은 상태라면 로그인 페이지로 리다이렉트
+     * 요청 쿼리에 담긴 index로 식별되는 글의 댓글로 등록됨
+     * @param request
+     * @return
+     */
     @GetMapping(path = "/comment")
     public Response writePage(Request request){
        if (sessionDB.getSession(getSid(request)).isEmpty()) return redirectToLogin();
@@ -36,6 +43,12 @@ public class CommentHandler implements Handler , Authorizer{
        return new Response(startLine).header(responseHeader).body(responseBody);
     }
 
+    /**
+     * 댓글 게시 요청에 응답
+     * 댓글을 작성자 - 게시글 인덱스 - 내용 형태로 DB에 저장
+     * @param request
+     * @return
+     */
     @PostMapping(path = "/comment")
     public Response writeComment(Request request){
         int articleIndex = Integer.parseInt(request.getRequestQuery("index"));
@@ -46,6 +59,12 @@ public class CommentHandler implements Handler , Authorizer{
         return redirectTo(ARTICLE_URL + articleIndex);
     }
 
+    /**
+     * 댓글을 DB에 저장
+     * @param messageBody 댓글 게시 요청 중 본문
+     * @param writer 작성자 닉네임
+     * @param articleIndex 게시글 인덱스
+     */
     private void createComment(MessageBody messageBody , String writer, int articleIndex){
         String content = messageBody.getContentByKey("content");
 
