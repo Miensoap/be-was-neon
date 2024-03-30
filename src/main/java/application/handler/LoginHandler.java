@@ -45,7 +45,7 @@ public class LoginHandler implements Handler, Authorizer {
 
         responseHeader = MessageHeader.builder().field(LOCATION, "/").build();
         startLine = new ResponseStartLine(HTTP_VERSION, FOUND);
-        
+
         // 비밀번호 확인
         User user = userOptional.get();
         if (user.isCorrectPassword(requestBody.getContentByKey(USER_PW))) {

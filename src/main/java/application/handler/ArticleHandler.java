@@ -1,10 +1,12 @@
 package application.handler;
 
 import application.db.interfaces.ArticleDB;
+import application.db.interfaces.CommentDB;
 import application.db.interfaces.SessionDB;
 import application.db.interfaces.UserDB;
 import application.handler.utils.HtmlMaker;
 import application.model.Article;
+import application.model.Comment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import webserver.HttpHandler.ErrorHandler;
@@ -19,8 +21,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Base64;
+import java.util.List;
 import java.util.Optional;
 
+import static application.handler.utils.HtmlConst.ARTICLE_URL;
 import static webserver.HttpMessage.constants.WebServerConst.*;
 import static webserver.HttpMessage.constants.eums.FileType.HTML;
 import static webserver.HttpMessage.constants.eums.FileType.TXT;
@@ -43,11 +47,13 @@ public class ArticleHandler implements Handler, Authorizer {
     private final UserDB userDB;
     private final SessionDB sessionDB;
     private final ArticleDB articleDB;
+    private final CommentDB commentDB;
 
-    public ArticleHandler(UserDB userDB, SessionDB sessionDB, ArticleDB articleDB) {
+    public ArticleHandler(UserDB userDB, SessionDB sessionDB, ArticleDB articleDB, CommentDB commentDB) {
         this.userDB = userDB;
         this.sessionDB = sessionDB;
         this.articleDB = articleDB;
+        this.commentDB = commentDB;
     }
 
     @PostMapping(path = "/article")
@@ -55,12 +61,12 @@ public class ArticleHandler implements Handler, Authorizer {
         String writer = userDB.findUserById(sessionDB.getSession(getSid(request)).get()).get().getName(); // optional 사용해서 이상해짐
         int newArticleIndex = createArticle(request.getBody(), writer);
 
-        return redirectTo("/main/article?index=" + newArticleIndex);
+        return redirectTo(ARTICLE_URL + newArticleIndex);
     }
 
     @GetMapping(path = "/article")
     public Response getWritePage(Request request) {
-        if (sessionDB.getSession(getSid(request)).isEmpty()) return redirectToLogin();
+        if (sessionDB.getSession(getSid(request)).isEmpty()) return redirectToLogin(); // 이부분 중복 많은데 SessionDB를 필드로 가지는 추상클래스?
 
         return resourceHandler.responseGet(request);
     }
@@ -83,8 +89,10 @@ public class ArticleHandler implements Handler, Authorizer {
         // 정상 흐름 응답
         startLine = new ResponseStartLine(HTTP_VERSION, OK);
         Request mainReq = new Request(GET + " /main " + HTTP_VERSION); // Todo . 파일에 직접 접근하는 기능 인터페이스 추가
-        responseBody = new MessageBody(
-                HtmlMaker.getArticlePage(article, new String(resourceHandler.responseGet(mainReq).getBody()), index), HTML);
+        List<Comment> comments = commentDB.getComments(index); // Todo. 3개정도만 보여주도록
+
+        String page = HtmlMaker.getArticlePage(article, new String(resourceHandler.responseGet(mainReq).getBody()), comments);
+        responseBody = new MessageBody(page, HTML);
 
         responseHeader = writeContentResponseHeader(responseBody);
         return new Response(startLine).header(responseHeader).body(responseBody);
@@ -102,10 +110,7 @@ public class ArticleHandler implements Handler, Authorizer {
             filePath = writeToFile(decodedImg, "post" + currentIndex, "." + imageType.get().toString().toLowerCase());
         } else filePath = "/img/foo.png";
 
-        if (messageBody.getMultiContent(TXT) != null) {
-            content = new String(decoder.decode(messageBody.getMultiContent(TXT)));
-        }else content = "No content";
-
+        content = new String(decoder.decode(messageBody.getMultiContent(TXT)));
 
         articleDB.addArticle(new Article(content, filePath, writer, currentIndex));
         log.info(writer + "'s Article added : " + content);
