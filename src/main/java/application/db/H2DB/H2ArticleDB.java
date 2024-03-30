@@ -26,7 +26,7 @@ public class H2ArticleDB extends H2DataBase implements ArticleDB {
             query.setInt(4, article.getIndex());
             query.executeUpdate();
 
-
+            logInfo("Insert Article : " + article.getIndex());
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

@@ -38,7 +38,5 @@ public class WebApplication {
         userDB = new H2UserDB();
         sessionDB = new H2SessionDB();
         articleDB = new H2ArticleDB();
-
-        sessionDB.clear();
     }
 }

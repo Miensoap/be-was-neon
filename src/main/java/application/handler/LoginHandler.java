@@ -39,12 +39,15 @@ public class LoginHandler implements Handler, Authorizer {
 
         // 존재하지 않는 유저 ID
         Optional<User> userOptional = userDB.findUserById(requestBody.getContentByKey(USER_ID));
-        if(userOptional.isEmpty()){
+        if (userOptional.isEmpty()) {
             return redirectToLogin();
         }
 
+        responseHeader = MessageHeader.builder().field(LOCATION, "/").build();
+        startLine = new ResponseStartLine(HTTP_VERSION, FOUND);
+        
         // 비밀번호 확인
-        User user= userOptional.get();
+        User user = userOptional.get();
         if (user.isCorrectPassword(requestBody.getContentByKey(USER_PW))) {
             String cookie = setCookie();
             sessionDB.addSession(new Session(cookie, user.getUserId()));
@@ -54,7 +57,7 @@ public class LoginHandler implements Handler, Authorizer {
             return redirectToLogin();
         }
 
-        return redirectTo("/");
+        return new Response(startLine).header(responseHeader);
     }
 
     @PostMapping(path = "/logout")

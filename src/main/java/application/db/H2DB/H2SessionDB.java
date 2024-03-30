@@ -45,6 +45,8 @@ public class H2SessionDB extends H2DataBase implements SessionDB {
             query.setString(1, session.getSessionId());
             query.setString(2, session.getUserId());
             query.executeUpdate();
+
+            logInfo("Insert Session : " + session.getSessionId());
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -58,6 +60,8 @@ public class H2SessionDB extends H2DataBase implements SessionDB {
             PreparedStatement query = connection.prepareStatement(removeSessionQuery);
             query.setString(1, sessionId);
             query.executeUpdate();
+
+            logInfo("Delete Session : " + sessionId);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -81,6 +85,8 @@ public class H2SessionDB extends H2DataBase implements SessionDB {
         try {
             PreparedStatement query = connection.prepareStatement(clearQuery);
             query.executeUpdate();
+
+            logInfo("Delete All Session : ");
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

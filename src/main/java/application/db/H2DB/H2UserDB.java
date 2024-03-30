@@ -31,7 +31,7 @@ public class H2UserDB extends H2DataBase implements UserDB {
             query.setString(3, user.getName());
             query.setString(4, user.getEmail());
             query.executeUpdate();
-
+            logInfo("Insert User : " + user.getName());
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -91,6 +91,8 @@ public class H2UserDB extends H2DataBase implements UserDB {
         try {
             try (PreparedStatement query = getConnection().prepareStatement(clearQuery)) {
                 query.executeUpdate();
+
+                logInfo("Delete All User");
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
