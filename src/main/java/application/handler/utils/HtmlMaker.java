@@ -11,7 +11,7 @@ public class HtmlMaker {
         String prevPath = "/main/article?index=" + (index - 1);
 
         return template
-                .replace("article_image" , article.getFilePath())
+                .replace("../img/welcome.jpg" , article.getFilePath())
                 .replace("writer_account" , article.getWriter())
                 .replace("article_content" , article.getContent())
                 .replace("next_article", nextPath)
