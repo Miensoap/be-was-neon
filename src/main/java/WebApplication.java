@@ -15,8 +15,8 @@ public class WebApplication {
     private static CommentDB commentDB;
 
     public static void main(String[] args)  throws Exception {
-        setMemDB();
-//        setH2DB();
+//        setMemDB();
+        setH2DB();
 
         List<Handler> codeStargramHandlers = List.of(
                 new LoginHandler(userDB, sessionDB),

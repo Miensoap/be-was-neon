@@ -27,7 +27,9 @@ public class CommentHandler implements Handler , Authorizer{
        if (sessionDB.getSession(getSid(request)).isEmpty()) return redirectToLogin();
 
        startLine = new ResponseStartLine(HTTP_VERSION, ResponseStatus.OK);
-       int articleIndex = Integer.parseInt(request.getRequestQuery("index"));
+       int articleIndex;
+
+       articleIndex = Integer.parseInt(request.getRequestQuery("index")); // Todo . 웰컴페이지에서 댓글작성 클릭 처리
 
        Request commentReq = new Request("GET /comment HTTP/1.1");
        String template = new String(resourceHandler.responseGet(commentReq).getBody());

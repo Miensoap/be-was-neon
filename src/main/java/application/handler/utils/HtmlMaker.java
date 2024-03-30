@@ -12,18 +12,18 @@ import static webserver.HttpMessage.constants.WebServerConst.CRLF;
 
 public class HtmlMaker {
     public static String getArticlePage(Article article , String template, List<Comment> comments){
-        int index = article.getIndex();
+        int index = article.index();
         String nextPath = ARTICLE_URL + (index + 1);
         String prevPath = ARTICLE_URL + (index - 1);
 
         return template
-                .replace(WELCOME , article.getFilePath())
-                .replace(WRITER , article.getWriter())
-                .replace(CONTENT , article.getContent())
+                .replace(WELCOME , article.filePath())
+                .replace(WRITER , article.writer())
+                .replace(CONTENT , article.content())
                 .replace(NEXT, nextPath)
                 .replace(PREV, prevPath)
                 .replace(COMMENT , makeCommentBlock(comments))
-                .replace("/comment", COMMENT_URL+ article.getIndex());
+                .replace("/comment", COMMENT_URL+ article.index());
     }
 
     public static String getCommentPage(String template , int articleIndex){

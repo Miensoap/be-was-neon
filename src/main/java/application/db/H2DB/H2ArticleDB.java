@@ -20,13 +20,13 @@ public class H2ArticleDB extends H2DataBase implements ArticleDB {
         String createArticleQuery = "INSERT INTO Article (content , userName , filePath, articleIndex) VALUES (? ,?, ?, ?);";
 
         try (PreparedStatement query = getConnection().prepareStatement(createArticleQuery)) {
-            query.setString(1, article.getContent());
-            query.setString(2, article.getWriter());
-            query.setString(3, article.getFilePath());
-            query.setInt(4, article.getIndex());
+            query.setString(1, article.content());
+            query.setString(2, article.writer());
+            query.setString(3, article.filePath());
+            query.setInt(4, article.index());
             query.executeUpdate();
 
-            logInfo("Insert Article : " + article.getIndex());
+            logInfo("Insert Article : " + article.index());
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
