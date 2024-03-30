@@ -1,10 +1,12 @@
 package webserver.HttpHandler;
 
-import webserver.HttpMessage.MessageBody;
-import webserver.HttpMessage.MessageHeader;
-import webserver.HttpMessage.Request;
+import webserver.HttpMessage.*;
 
 import java.util.Optional;
+
+import static webserver.HttpMessage.constants.WebServerConst.HTTP_VERSION;
+import static webserver.HttpMessage.constants.WebServerConst.LOCATION;
+import static webserver.HttpMessage.constants.eums.ResponseStatus.FOUND;
 
 
 public interface Handler {
@@ -14,5 +16,12 @@ public interface Handler {
                 .field("Content-Type", responseBody.getContentType().getMimeType())
                 .field("Content-Length", responseBody.getContentLength() + "")
                 .build();
+    }
+
+    default Response redirectTo(String path){
+        ResponseStartLine startLine = new ResponseStartLine(HTTP_VERSION, FOUND);
+        MessageHeader responseHeader = MessageHeader.builder()
+                .field(LOCATION, path).build();
+        return new Response(startLine).header(responseHeader);
     }
 }

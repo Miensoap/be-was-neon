@@ -52,14 +52,10 @@ public class ArticleHandler implements Handler, Authorizer {
 
     @PostMapping(path = "/article")
     public Response postArticle(Request request) throws IOException {
-        String writer = userDB.findUserById(sessionDB.getSession(getSid(request)).get()).get().getName();
+        String writer = userDB.findUserById(sessionDB.getSession(getSid(request)).get()).get().getName(); // optional 사용해서 이상해짐
         int newArticleIndex = createArticle(request.getBody(), writer);
 
-        startLine = new ResponseStartLine(HTTP_VERSION, FOUND);
-        responseHeader = MessageHeader.builder()
-                .field(LOCATION, "/main/article?index=" + newArticleIndex).build();
-
-        return new Response(startLine).header(responseHeader).body(responseBody);
+        return redirectTo("/main/article?index=" + newArticleIndex);
     }
 
     @GetMapping(path = "/article")
@@ -71,12 +67,12 @@ public class ArticleHandler implements Handler, Authorizer {
 
     @GetMapping(path = "/main/article")
     public Response getArticle(Request request) {
-        Request mainReq = new Request(GET + " /main " + HTTP_VERSION);
         int index = Integer.parseInt(request.getRequestQuery("index"));
 
         // 처음 ,마지막 글에서 이동 버튼 클릭 처리
-        if (index == 0) index += 1;
-        else if (index == articleDB.getSize() + 1) index -= 1;
+        int maxIndex = articleDB.getSize();
+        if (index == 0) return redirectToArticle(1);
+        else if (index ==  maxIndex+ 1) return redirectToArticle(maxIndex);
 
         Article article = articleDB.getArticle(index);
         // 존재하지 않는 글에 접근 처리
@@ -86,6 +82,7 @@ public class ArticleHandler implements Handler, Authorizer {
 
         // 정상 흐름 응답
         startLine = new ResponseStartLine(HTTP_VERSION, OK);
+        Request mainReq = new Request(GET + " /main " + HTTP_VERSION); // Todo . 파일에 직접 접근하는 기능 인터페이스 추가
         responseBody = new MessageBody(
                 HtmlMaker.getArticlePage(article, new String(resourceHandler.responseGet(mainReq).getBody()), index), HTML);
 
@@ -123,5 +120,9 @@ public class ArticleHandler implements Handler, Authorizer {
 
         log.info("file saved : " + filePath);
         return filePath;
+    }
+
+    private Response redirectToArticle(int index){
+        return  redirectTo("/main/article?index=" + index);
     }
 }

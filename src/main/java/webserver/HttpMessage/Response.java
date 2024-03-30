@@ -46,4 +46,9 @@ public class Response {
                 .add(header.toString() + CRLF);
         return sj.toString();
     }
+
+    public Response addHeaderField(String key, String value) {
+        this.header.headerFields.put(key , value);
+        return this;
+    }
 }

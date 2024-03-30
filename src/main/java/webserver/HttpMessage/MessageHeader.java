@@ -41,7 +41,7 @@ public class MessageHeader {
         return Collections.unmodifiableMap(headerFields);
     }
 
-    private void addHeaderField(String key, String value) {
+    public void addHeaderField(String key, String value) {
         headerFields.put(key, value);
     }
 
@@ -61,9 +61,13 @@ public class MessageHeader {
         ZonedDateTime dateTime = ZonedDateTime.now().plus(1, ChronoUnit.MINUTES);
         String formattedDateTime = dateTime.format(DateTimeFORMAT);
 
-        addHeaderField("Set-Cookie", cookieName + "=" + newCookie + VALUE_DELIM +
-                "Path=/" + VALUE_DELIM
-                + "Expires=" + formattedDateTime);
+        String value = cookieName + "=" + newCookie + VALUE_DELIM + "Path=/" + VALUE_DELIM + "Expires=" + formattedDateTime;
+
+        try {
+            addHeaderField("Set-Cookie", value);
+        }catch (IllegalArgumentException secondPut){
+            headerFields.replace("Set-Cookie", value);
+        }
 
         return newCookie;
     }
