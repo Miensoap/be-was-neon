@@ -1,9 +1,6 @@
 package application.handler;
 
-import application.db.interfaces.ArticleDB;
-import application.db.interfaces.CommentDB;
-import application.db.interfaces.SessionDB;
-import application.db.interfaces.UserDB;
+import application.db.interfaces.*;
 import application.handler.utils.HtmlMaker;
 import application.model.Comment;
 import org.slf4j.Logger;
@@ -29,7 +26,7 @@ public class CommentHandler implements Handler , Authorizer{
        startLine = new ResponseStartLine(HTTP_VERSION, ResponseStatus.OK);
        int articleIndex;
 
-       articleIndex = Integer.parseInt(request.getRequestQuery("index")); // Todo . 웰컴페이지에서 댓글작성 클릭 처리
+       articleIndex = Integer.parseInt(request.getRequestQuery("index"));
 
        Request commentReq = new Request("GET /comment HTTP/1.1");
        String template = new String(resourceHandler.responseGet(commentReq).getBody());

@@ -20,6 +20,7 @@ public class HtmlMaker {
                 .replace(WELCOME , article.filePath())
                 .replace(WRITER , article.writer())
                 .replace(CONTENT , article.content())
+                .replace(NAV , ARTICLE_NAV)
                 .replace(NEXT, nextPath)
                 .replace(PREV, prevPath)
                 .replace(COMMENT , makeCommentBlock(comments))
