@@ -19,7 +19,7 @@ public class H2ArticleDB extends H2DataBase implements ArticleDB {
     public void addArticle(Article article) {
         String createArticleQuery = "INSERT INTO Article (content , userName , filePath, articleIndex) VALUES (? ,?, ?, ?);";
 
-        try (PreparedStatement query = getConnection().prepareStatement(createArticleQuery)) {
+        try (PreparedStatement query = connection.prepareStatement(createArticleQuery)) {
             query.setString(1, article.content());
             query.setString(2, article.writer());
             query.setString(3, article.filePath());
@@ -36,7 +36,7 @@ public class H2ArticleDB extends H2DataBase implements ArticleDB {
     public Article getArticle(int index) {
         String getArticleQuery = "SELECT * FROM Article WHERE articleindex =  ? ;";
 
-        try (PreparedStatement query = getConnection().prepareStatement(getArticleQuery)) {
+        try (PreparedStatement query = connection.prepareStatement(getArticleQuery)) {
             query.setInt(1, index);
             try (ResultSet resultSet = query.executeQuery()){
                 if (resultSet.next()) {
@@ -62,7 +62,7 @@ public class H2ArticleDB extends H2DataBase implements ArticleDB {
     public int getSize() {
         String getSizeQuery = "SELECT COUNT(*) FROM Article;";
 
-        try (PreparedStatement query = getConnection().prepareStatement(getSizeQuery)) {
+        try (PreparedStatement query =connection.prepareStatement(getSizeQuery)) {
             try(ResultSet resultSet = query.executeQuery()) {
 
                 if (!resultSet.next()) return 0;

@@ -72,11 +72,12 @@ public class H2SessionDB extends H2DataBase implements SessionDB {
         String getSizeQuery = "SELECT COUNT(*) FROM Session;";
         try (PreparedStatement query = connection.prepareStatement(getSizeQuery)){
             try(ResultSet resultSet = query.executeQuery()) {
-                return resultSet.getInt(1);
+                if(resultSet.next()) return resultSet.getInt(1);
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            return 0;
         }
+        return 0;
     }
 
     @Override
@@ -86,7 +87,7 @@ public class H2SessionDB extends H2DataBase implements SessionDB {
             PreparedStatement query = connection.prepareStatement(clearQuery);
             query.executeUpdate();
 
-            logInfo("Delete All Session : ");
+            logInfo("Delete All Session");
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

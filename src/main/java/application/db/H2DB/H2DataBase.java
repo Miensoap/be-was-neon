@@ -25,4 +25,13 @@ public abstract class H2DataBase {
     protected void logInfo(String message){
         logger.info(message);
     }
+
+
+    public void commit() throws SQLException {
+        connection.commit();
+    }
+
+    public void rollback() throws SQLException {
+        connection.rollback();
+    }
 }

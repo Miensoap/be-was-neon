@@ -1,4 +1,4 @@
-package webserver.HttpHandler;
+package application.handler;
 
 import application.db.interfaces.SessionDB;
 import application.db.interfaces.UserDB;

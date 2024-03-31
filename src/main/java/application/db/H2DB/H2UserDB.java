@@ -25,7 +25,7 @@ public class H2UserDB extends H2DataBase implements UserDB {
 
         String createUserQuery = "INSERT INTO BE_User (userId, password, userName, email) VALUES (?, ?, ?, ?)";
 
-        try (PreparedStatement query = getConnection().prepareStatement(createUserQuery)) {
+        try (PreparedStatement query = connection.prepareStatement(createUserQuery)) {
             query.setString(1, user.getUserId());
             query.setString(2, user.getPassWord());
             query.setString(3, user.getName());
@@ -42,7 +42,7 @@ public class H2UserDB extends H2DataBase implements UserDB {
     public Optional<User> findUserById(String userId) {
         String findByUserIdQuery = "SELECT * FROM BE_User WHERE userId = ?";
 
-        try (PreparedStatement query = getConnection().prepareStatement(findByUserIdQuery)) {
+        try (PreparedStatement query = connection.prepareStatement(findByUserIdQuery)) {
             query.setString(1, userId);
             try(ResultSet resultSet = query.executeQuery()){
                 if(resultSet.next()) return convertRowToUser(resultSet);
@@ -57,7 +57,7 @@ public class H2UserDB extends H2DataBase implements UserDB {
         String findAllQuery = "SELECT * FROM BE_User";
         Map<String, User> users = new HashMap<>();
 
-        try (PreparedStatement query = getConnection().prepareStatement(findAllQuery)) {
+        try (PreparedStatement query = connection.prepareStatement(findAllQuery)) {
             try(ResultSet resultSet = query.executeQuery()) {
 
                 while (resultSet.next()) {
@@ -89,7 +89,7 @@ public class H2UserDB extends H2DataBase implements UserDB {
         String clearQuery = "DELETE FROM BE_User";
 
         try {
-            try (PreparedStatement query = getConnection().prepareStatement(clearQuery)) {
+            try (PreparedStatement query = connection.prepareStatement(clearQuery)) {
                 query.executeUpdate();
 
                 logInfo("Delete All User");

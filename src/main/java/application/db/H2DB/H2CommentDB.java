@@ -18,7 +18,7 @@ public class H2CommentDB extends H2DataBase implements CommentDB {
     public void addComment(Comment comment) {
         String createCommentQuery = "INSERT INTO Comment (content , userName , articleIndex) VALUES (? ,?, ?);";
 
-        try (PreparedStatement query = getConnection().prepareStatement(createCommentQuery)) {
+        try (PreparedStatement query = connection.prepareStatement(createCommentQuery)) {
             query.setString(1, comment.content());
             query.setString(2, comment.writer());
             query.setInt(3, comment.articleIndex());
@@ -35,7 +35,7 @@ public class H2CommentDB extends H2DataBase implements CommentDB {
         String findAllQuery = "SELECT * FROM  Comment WHERE articleIndex= ? ;";
 
         List<Comment> comments = new ArrayList<>();
-        try (PreparedStatement query = getConnection().prepareStatement(findAllQuery)) {
+        try (PreparedStatement query = connection.prepareStatement(findAllQuery)) {
             query.setInt(1, articleIndex);
             try(ResultSet resultSet = query.executeQuery()) {
                 while (resultSet.next()){
