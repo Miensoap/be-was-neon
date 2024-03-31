@@ -1,4 +1,4 @@
-package db;
+package application.db;
 
 import application.db.interfaces.SessionDB;
 import application.db.memoryDB.MemSessionDB;
