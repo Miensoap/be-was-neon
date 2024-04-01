@@ -68,7 +68,7 @@ public class MappingMatcher {
             }
         }
         // default : get Resource
-        return resourceHandler.responseGet(request);
+        return new ResourceHandler().responseGet(request);
     }
 
     /**
