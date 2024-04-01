@@ -45,7 +45,7 @@ public class SocketMessageHandler implements Runnable {
 
         } catch (Exception e) {
             log.error(e.getMessage());
-            e.printStackTrace();
+//            e.printStackTrace();
         }
     }
 }

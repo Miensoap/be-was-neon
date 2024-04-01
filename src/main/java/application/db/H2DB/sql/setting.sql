@@ -1,25 +1,25 @@
 -- User Table Create SQL
 CREATE TABLE BE_User
 (
-    `userId`    VARCHAR(50)    NOT NULL,
-    `password`  VARCHAR(50)    NULL,
-    `userName`  VARCHAR(50)    NULL,
-    `email`     VARCHAR(50)    NULL,
-     PRIMARY KEY (userId)
+    `userId`   VARCHAR(50) NOT NULL,
+    `password` VARCHAR(50) NULL,
+    `userName` VARCHAR(50) NULL,
+    `email`    VARCHAR(50) NULL,
+    PRIMARY KEY (userId)
 );
 
 -- Article FK 위해 UNIQUE 설정
 ALTER TABLE BE_User
-ADD CONSTRAINT uk_userName UNIQUE (userName);
+    ADD CONSTRAINT uk_userName UNIQUE (userName);
 
 -- Article Table Create SQL
 CREATE TABLE Article
 (
-    `articleIndex`  INT             NOT NULL    AUTO_INCREMENT,
-    `content`       VARCHAR(200)    NULL,
-    `userName`      VARCHAR(50)     NULL,
-    `filePath`      VARCHAR(50)     NULL,
-     PRIMARY KEY (articleIndex)
+    `articleIndex` INT          NOT NULL AUTO_INCREMENT,
+    `content`      VARCHAR(200) NULL,
+    `userName`     VARCHAR(50)  NULL,
+    `filePath`     VARCHAR(50)  NULL,
+    PRIMARY KEY (articleIndex)
 );
 
 -- Foreign Key 설정 SQL - Article(userName) -> User(userName)
@@ -30,9 +30,9 @@ ALTER TABLE Article
 -- Session Table Create SQL
 CREATE TABLE Session
 (
-    `sessionId`  VARCHAR(50)    NOT NULL,
-    `userId`     VARCHAR(50)    NULL,
-     PRIMARY KEY (sessionId)
+    `sessionId` VARCHAR(50) NOT NULL,
+    `userId`    VARCHAR(50) NULL,
+    PRIMARY KEY (sessionId)
 );
 
 -- Foreign Key 설정 SQL - Session(userId) -> User(userId)
@@ -43,9 +43,11 @@ ALTER TABLE Session
 -- Comment Table Create SQL
 CREATE TABLE Comment
 (
-    `articleIndex`  INT             NOT NULL,
-    `content`       VARCHAR(200)    NULL,
-     PRIMARY KEY (articleIndex)
+    `commentIndex` INT          AUTO_INCREMENT PRIMARY KEY,
+    `articleIndex` INT          NOT NULL,
+    `content`      VARCHAR(200) NULL,
+
+    PRIMARY KEY (commentIndex)
 );
 
 -- Foreign Key 설정 SQL - Comment(articleIndex) -> Article(articleIndex)
