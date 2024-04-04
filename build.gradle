@@ -1,6 +1,7 @@
 plugins {
     id 'java'
     id 'jacoco'
+    id 'com.github.johnrengelman.shadow' version '6.1.0'
 }
 
 group 'codesquad'
@@ -28,4 +29,19 @@ dependencies {
 
 test {
     useJUnitPlatform()
+}
+
+task runServer(type: JavaExec) {
+    main = 'WebApplication'
+    classpath = sourceSets.main.runtimeClasspath
+}
+
+jar {
+    finalizedBy shadowJar
+    manifest {
+        attributes(
+                'Main-Class': 'WebApplication'
+        )
+    }
+    from sourceSets.main.output
 }

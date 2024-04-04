@@ -17,6 +17,8 @@ public class WebServer {
     private final ExecutorService executorService = Executors.newCachedThreadPool();
 
     public static final String staticSourcePath = "./src/main/resources/static";
+//    public static final String staticSourcePath = "resources/static";
+
     private final MappingMatcher mappingMatcher;
 
     public WebServer(List<Handler> appHandlers) {
