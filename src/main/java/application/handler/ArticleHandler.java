@@ -49,6 +49,9 @@ public class ArticleHandler implements Handler, Authorizer {
     private final ArticleDB articleDB;
     private final CommentDB commentDB;
 
+    // Util
+    private static final HtmlMaker htmlMaker = new HtmlMaker();
+
     public ArticleHandler(UserDB userDB, SessionDB sessionDB, ArticleDB articleDB, CommentDB commentDB) {
         this.userDB = userDB;
         this.sessionDB = sessionDB;
@@ -81,7 +84,7 @@ public class ArticleHandler implements Handler, Authorizer {
     public Response getWritePage(Request request) {
         if (sessionDB.getSession(getSid(request)).isEmpty()) return redirectToLogin(); // 이부분 중복 많은데 SessionDB를 필드로 가지는 추상클래스?
 
-        return resourceHandler.responseGet(request);
+        return resourceHandler.getResource(request);
     }
 
     /**
@@ -108,10 +111,9 @@ public class ArticleHandler implements Handler, Authorizer {
 
         // 정상 흐름 응답
         startLine = new ResponseStartLine(HTTP_VERSION, OK);
-        Request mainReq = new Request(GET + " /main " + HTTP_VERSION); // Todo . 파일에 직접 접근하는 기능 인터페이스 추가
         List<Comment> comments = commentDB.getComments(index); // Todo. 3개정도만 보여주도록
 
-        String page = HtmlMaker.getArticlePage(article, new String(resourceHandler.responseGet(mainReq).getBody()), comments);
+        String page = htmlMaker.getArticlePage(article, comments);
         responseBody = new MessageBody(page, HTML);
 
         responseHeader = writeContentResponseHeader(responseBody);

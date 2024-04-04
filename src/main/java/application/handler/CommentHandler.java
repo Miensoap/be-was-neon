@@ -36,8 +36,7 @@ public class CommentHandler implements Handler , Authorizer{
        articleIndex = Integer.parseInt(request.getRequestQuery("index"));
 
        Request commentReq = new Request("GET /comment HTTP/1.1");
-       String template = new String(resourceHandler.responseGet(commentReq).getBody());
-       responseBody = new MessageBody(HtmlMaker.getCommentPage(template, articleIndex), FileType.HTML);
+       responseBody = new MessageBody(htmlMaker.getCommentPage(articleIndex), FileType.HTML);
        responseHeader = writeContentResponseHeader(responseBody);
 
        return new Response(startLine).header(responseHeader).body(responseBody);
@@ -74,6 +73,8 @@ public class CommentHandler implements Handler , Authorizer{
         commentDB.addComment(comment);
     }
 
+
+    private final HtmlMaker htmlMaker = new HtmlMaker();
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     // Response

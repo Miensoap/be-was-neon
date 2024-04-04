@@ -2,9 +2,7 @@ package webserver.HttpHandler.Mapping;
 
 import webserver.HttpHandler.ErrorHandler;
 import webserver.HttpHandler.Handler;
-import application.handler.LoginHandler;
 import webserver.HttpHandler.ResourceHandler;
-import application.handler.UserHandler;
 import webserver.HttpMessage.Request;
 import webserver.HttpMessage.RequestStartLine;
 import webserver.HttpMessage.Response;
@@ -68,13 +66,14 @@ public class MappingMatcher {
             }
         }
         // default : get Resource
-        return new ResourceHandler().responseGet(request);
+        return new ResourceHandler().getResource(request);
     }
 
     /**
+     * 요청 메시지의 Method , URI 를 확인해 핸들러 메서드의 정보와 일치하는지 여부를 반환
      * @param method HTTP Method
      * @param uri 요청 URI
-     * @return 요청과 일치하는 핸들러인지 여부
+     * @return 요청과 일치하는 메서드인지 여부
      */
     private boolean matchGetMapping(Method method, String uri) {
         if (method.isAnnotationPresent(GetMapping.class)) {

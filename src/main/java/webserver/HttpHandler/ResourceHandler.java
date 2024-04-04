@@ -3,8 +3,6 @@ package webserver.HttpHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import webserver.HttpMessage.*;
-import webserver.HttpHandler.Mapping.GetMapping;
-import webserver.HttpMessage.constants.eums.FileType;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,7 +24,7 @@ public class ResourceHandler implements Handler {
      * @param request
      * @return
      */
-    public Response responseGet(Request request) {
+    public Response getResource(Request request) {
         String path = request.getStartLine().getUri();
 
         log.debug("path : " + path);

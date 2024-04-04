@@ -20,7 +20,7 @@ public class ResourceHandlerTest {
     void getResourceRequest(String startLine) {
 
         Request request = new Request(startLine);
-        Response response = RESOURCE_HANDLER.responseGet(request);
+        Response response = RESOURCE_HANDLER.getResource(request);
         String body = new String(response.getBody());
         Map<String, String> headerFields = response.getHeader().getHeaderFields();
 
@@ -33,7 +33,7 @@ public class ResourceHandlerTest {
     @DisplayName("url path로 특정할 수 있는 리소스가 없다면 , 해당 경로의 index.html 을 요청한 것으로 간주한다")
     void getPathRequest(String startLine) {
         Request request = new Request(startLine);
-        Response response = RESOURCE_HANDLER.responseGet(request);
+        Response response = RESOURCE_HANDLER.getResource(request);
         String body = new String(response.getBody());
         Map<String, String> headerFields = response.getHeader().getHeaderFields();
 

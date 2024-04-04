@@ -97,7 +97,7 @@ public class LoginHandler implements Handler, Authorizer {
 
         if (sessionDB.getSession(getSid(request)).isPresent()) {
             String userName = sessionDB.getSession(getSid(request)).get();
-            Response mainIndex = resourceHandler.responseGet(new Request("GET /main " + HTTP_VERSION));
+            Response mainIndex = resourceHandler.getResource(new Request("GET /main " + HTTP_VERSION));
 
             String loginUserIndexPage = new String(mainIndex.getBody()).replace("<!--UserName-->", userName);
             responseBody = new MessageBody(loginUserIndexPage, FileType.HTML);
@@ -107,7 +107,7 @@ public class LoginHandler implements Handler, Authorizer {
             return mainIndex.header(responseHeader).body(responseBody);
         }
 
-        return resourceHandler.responseGet(request);
+        return resourceHandler.getResource(request);
     }
 
     /**

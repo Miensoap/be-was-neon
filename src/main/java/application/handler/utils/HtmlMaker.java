@@ -3,6 +3,7 @@ package application.handler.utils;
 import application.model.Article;
 import application.model.Comment;
 import application.model.User;
+import webserver.HttpHandler.utils.FileReadable;
 
 import java.util.List;
 import java.util.StringJoiner;
@@ -10,16 +11,17 @@ import java.util.StringJoiner;
 import static application.handler.utils.HtmlConst.*;
 import static webserver.HttpMessage.constants.WebServerConst.CRLF;
 
-public class HtmlMaker {
+public class HtmlMaker implements FileReadable {
 
     /**
      * 템플릿을 수정해 게시글 조회 HTML 페이지를 반환
      * @param article 게시글
-     * @param template 템플릿
      * @param comments 댓글 리스트
      * @return
      */
-    public static String getArticlePage(Article article , String template, List<Comment> comments){
+    public String getArticlePage(Article article , List<Comment> comments){
+        String template = readFileToString(ARTICLE_PAGE_PATH);
+
         int index = article.index();
         String nextPath = ARTICLE_URL + (index + 1);
         String prevPath = ARTICLE_URL + (index - 1);
@@ -28,7 +30,7 @@ public class HtmlMaker {
                 .replace(WELCOME , article.filePath())
                 .replace(WRITER , article.writer())
                 .replace(CONTENT , article.content())
-                .replace(NAV , ARTICLE_NAV)
+                .replace(NAV , readFileToString(NAV_HTML_PATH))
                 .replace(NEXT, nextPath)
                 .replace(PREV, prevPath)
                 .replace(COMMENT , makeCommentBlock(comments))
@@ -37,19 +39,20 @@ public class HtmlMaker {
 
     /**
      * 댓글 작성 페이지를 만들어 반환
-     * @param template 템플릿
      * @param articleIndex 댓글 작성하려 하는 게시글 인덱스
      * @return
      */
-    public static String getCommentPage(String template , int articleIndex){
+    public String getCommentPage(int articleIndex){
+        String template = readFileToString(COMMENT_PAGE_PATH);
         return template.replace(COMMENT_POST , COMMENT_URL+articleIndex);
     }
 
-    private static String makeCommentBlock(List<Comment> comments){
+    private String makeCommentBlock(List<Comment> comments){
+        String template = readFileToString(COMMENT_BLOCK_PATH);
         StringJoiner sj = new StringJoiner(CRLF);
 
         comments.forEach(comment -> {
-            sj.add(COMMENT_BLOCK
+            sj.add(template
                 .replace(WRITER , comment.writer())
                 .replace(CONTENT, comment.content())
             );
