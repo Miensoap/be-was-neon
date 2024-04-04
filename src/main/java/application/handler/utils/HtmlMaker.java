@@ -20,7 +20,7 @@ public class HtmlMaker implements FileReadable {
      * @return
      */
     public String getArticlePage(Article article , List<Comment> comments){
-        String template = readFileToString(ARTICLE_PAGE_PATH);
+        String template = readFileToString(ARTICLE_TEMPLATE_PATH);
 
         int index = article.index();
         String nextPath = ARTICLE_URL + (index + 1);

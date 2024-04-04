@@ -14,6 +14,7 @@ import webserver.HttpHandler.Handler;
 import webserver.HttpHandler.Mapping.GetMapping;
 import webserver.HttpHandler.Mapping.PostMapping;
 import webserver.HttpHandler.ResourceHandler;
+import webserver.HttpHandler.utils.FileReadable;
 import webserver.HttpMessage.*;
 import webserver.HttpMessage.constants.eums.FileType;
 
@@ -31,7 +32,7 @@ import static webserver.HttpMessage.constants.eums.FileType.TXT;
 import static webserver.HttpMessage.constants.eums.ResponseStatus.*;
 import static webserver.WebServer.staticSourcePath;
 
-public class ArticleHandler implements Handler, Authorizer {
+public class ArticleHandler implements Handler, Authorizer, FileReadable {
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     // Response
