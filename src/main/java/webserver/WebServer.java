@@ -8,11 +8,14 @@ import webserver.HttpHandler.Mapping.MappingMatcher;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class WebServer {
     private static final Logger logger = LoggerFactory.getLogger(WebServer.class);
     private static final int DEFAULT_PORT = 8080;
+    private final ExecutorService executorService = Executors.newCachedThreadPool();
+
     public static final String staticSourcePath = "./src/main/resources/static";
     private final MappingMatcher mappingMatcher;
 
@@ -20,6 +23,12 @@ public class WebServer {
         this.mappingMatcher = new MappingMatcher(appHandlers);
     }
 
+    /**
+     * 웹 서버를 시작한다
+     *
+     * @param args 사용할 포트 번호 , 지정하지 않으면 8080 사용
+     * @throws Exception
+     */
     public void startServer(String[] args) throws Exception {
         int port = 0;
         if (args == null || args.length == 0) {
@@ -35,9 +44,12 @@ public class WebServer {
             // 클라이언트가 연결될때까지 대기한다.
             Socket connection;
             while ((connection = listenSocket.accept()) != null) {
-                CompletableFuture<Void> thread = CompletableFuture.runAsync(new SocketMessageHandler(connection, mappingMatcher));
-                thread.get();
+                SocketMessageHandler socketMessageHandler = new SocketMessageHandler(connection, mappingMatcher);
+                executorService.execute(socketMessageHandler);
             }
+        } finally {
+            executorService.shutdown();
         }
     }
 }
+

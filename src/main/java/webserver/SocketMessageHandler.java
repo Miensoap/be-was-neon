@@ -19,6 +19,9 @@ public class SocketMessageHandler implements Runnable {
         this.matcher = mappingMatcher;
     }
 
+    /**
+     * HTTP 요청을 받아 요청에 맞는 HTTP 응답을 전송
+     */
     public void run() {
         log.debug("New Client Connect! Connected IP : {}, Port : {}", connection.getInetAddress(), connection.getPort());
 
@@ -33,14 +36,16 @@ public class SocketMessageHandler implements Runnable {
             dos.writeBytes(response.toString());
 
             byte[] responseBody;
-            if ((responseBody = response.getBody()) != null) {
+            if (response.messageBody() != null) {
+                responseBody = response.messageBody().getBody();
                 dos.write(responseBody);
-                dos.flush();
             }
+            dos.flush();
             log.debug("Send : " + response.getStartLine().toString() + " for " + request.getStartLine().toString());
 
         } catch (Exception e) {
             log.error(e.getMessage());
+//            e.printStackTrace();
         }
     }
 }

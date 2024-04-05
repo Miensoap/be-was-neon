@@ -1,20 +1,69 @@
 package application.handler.utils;
 
-import application.db.Database;
 import application.model.Article;
+import application.model.Comment;
 import application.model.User;
-import webserver.HttpHandler.ResourceHandler;
-import webserver.HttpMessage.Request;
+
+import java.util.List;
+import java.util.StringJoiner;
+
+import static application.handler.utils.HtmlConst.*;
+import static webserver.HttpMessage.constants.WebServerConst.CRLF;
 
 public class HtmlMaker {
-    public static String getArticlePage(Article article , String template){
+
+    /**
+     * 템플릿을 수정해 게시글 조회 HTML 페이지를 반환
+     * @param article 게시글
+     * @param template 템플릿
+     * @param comments 댓글 리스트
+     * @return
+     */
+    public static String getArticlePage(Article article , String template, List<Comment> comments){
+        int index = article.index();
+        String nextPath = ARTICLE_URL + (index + 1);
+        String prevPath = ARTICLE_URL + (index - 1);
+
         return template
-                .replace("article_image" , "\"data:image/;base64," + article.getEncodedImg()+"\"")
-                .replace("writer_account" , article.getWriter())
-                .replace("article_content" , article.getContent());
+                .replace(WELCOME , article.filePath())
+                .replace(WRITER , article.writer())
+                .replace(CONTENT , article.content())
+                .replace(NAV , ARTICLE_NAV)
+                .replace(NEXT, nextPath)
+                .replace(PREV, prevPath)
+                .replace(COMMENT , makeCommentBlock(comments))
+                .replace("/comment", COMMENT_URL+ article.index());
     }
 
-    public static String getListHtml(){
+    /**
+     * 댓글 작성 페이지를 만들어 반환
+     * @param template 템플릿
+     * @param articleIndex 댓글 작성하려 하는 게시글 인덱스
+     * @return
+     */
+    public static String getCommentPage(String template , int articleIndex){
+        return template.replace(COMMENT_POST , COMMENT_URL+articleIndex);
+    }
+
+    private static String makeCommentBlock(List<Comment> comments){
+        StringJoiner sj = new StringJoiner(CRLF);
+
+        comments.forEach(comment -> {
+            sj.add(COMMENT_BLOCK
+                .replace(WRITER , comment.writer())
+                .replace(CONTENT, comment.content())
+            );
+        });
+
+        return sj.toString();
+    }
+
+    /**
+     * 유저 목록 페이지를 만들어 반환
+     * @param users 회원가입 된 유저 리스트
+     * @return
+     */
+    public static String getListHtml(List<User> users){
         StringBuilder sb = new StringBuilder();
         sb.append("""
                 <!DOCTYPE html>
@@ -27,7 +76,7 @@ public class HtmlMaker {
                 <body>
                 """);
 
-        for(User user : Database.findAll()){
+        for(User user : users){
             sb.append("<br>");
             sb.append(user.getName());
         }
@@ -38,6 +87,4 @@ public class HtmlMaker {
 
         return sb.toString();
     }
-
-
 }

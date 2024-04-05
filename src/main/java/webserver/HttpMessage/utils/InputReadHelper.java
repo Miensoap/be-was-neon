@@ -12,6 +12,14 @@ import java.io.InputStream;
 import static webserver.HttpMessage.constants.WebServerConst.*;
 
 public class InputReadHelper {
+
+    /**
+     * BufferedInputStream 에서 readLine 사용
+     * CR , LF 전까지의 문자열을 반환
+     * @param in BufferedInputStream
+     * @return 한 Line 문자열
+     * @throws IOException
+     */
     public static String biReadLine(BufferedInputStream in) throws IOException {
         StringBuilder sb = new StringBuilder();
 
@@ -28,6 +36,13 @@ public class InputReadHelper {
         return sb.substring(0, sb.length() - 1); // \r 삭제
     }
 
+
+    /**
+     * HTTP 요청 메시지를 Request 객체로 변환
+     * @param in Socket InputStream
+     * @return
+     * @throws IOException
+     */
     public static Request readRequestMessage(InputStream in) throws IOException {
         BufferedInputStream bi = new BufferedInputStream(in);
 
@@ -67,6 +82,13 @@ public class InputReadHelper {
         return request;
     }
 
+    /**
+     * BuffedInputStream 을 1024 바이트 단위로 나누어 읽고 , 읽은 전체를 반환
+     * @param bi
+     * @param body
+     * @param contentLength 읽을 내용의 바이트 기준 길이
+     * @throws IOException
+     */
     private static void readBody(BufferedInputStream bi, byte[] body, int contentLength) throws IOException {
         int bytesRead = 0;
         int offset = 0;
